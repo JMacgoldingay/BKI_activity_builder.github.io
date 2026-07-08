@@ -45,14 +45,14 @@
 <body>
 <header>
   <h1>BKI Activity Builder</h1>
-  <p>Fill in the fields, generate clean Moodle-paste-ready markup, then paste it into the source view of your page or chapter and save. Smart quotes and dashes are cleaned automatically.</p>
+  <p>Fill in the fields, generate clean Moodle-paste-ready markup, then paste it into the source view of your page or chapter and save. Smart quotes and dashes are cleaned automatically. All output is JavaScript-free: interactivity uses the Moodle theme's own Bootstrap collapse and tabs.</p>
 </header>
 
 <div class="tabs" id="tabs" role="tablist"></div>
 
 <div class="wrap">
-  <section class="panel" aria-label="Activity fields">
-    <h2 id="formTitle">Activity fields</h2>
+  <section class="panel" aria-label="Snippet fields">
+    <h2 id="formTitle">Snippet fields</h2>
     <div id="form"></div>
     <div class="bar">
       <button class="btn" id="genBtn">Generate markup</button>
@@ -68,7 +68,7 @@
       <button class="btn ghost" id="dlBtn">Download .html</button>
     </div>
     <h2 style="margin-top:1rem;">Live preview <span class="muted">(interactive)</span></h2>
-    <iframe class="preview" id="preview" title="Activity preview"></iframe>
+    <iframe class="preview" id="preview" title="Snippet preview"></iframe>
   </section>
 </div>
 
@@ -76,7 +76,6 @@
 /* ---------- shared helpers ---------- */
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function attr(s){ return esc(s).replace(/"/g,'&quot;'); }
-function uid(){ return Math.random().toString(36).slice(2,8); }
 
 /* The sanitiser: normalise Word junk to rule-compliant characters.
    Targets ONLY smart quotes, dashes, non-breaking spaces and ellipsis.
@@ -108,858 +107,362 @@ function junkReport(texts){
 function val(id){ var el=document.getElementById(id); return el?el.value:''; }
 function add(parent, html){ var d=document.createElement('div'); d.innerHTML=html; while(d.firstChild) parent.appendChild(d.firstChild); }
 
-var BLUE='#1a4b8c', GREEN='#2e7d32', GREENBG='#eef6ef', NAVBLUE='#2f6fb0';
-
-/* ---------- generated activity scripts (closing tag escaped so this page parses) ---------- */
-var MCQ_SCRIPT = `<script>
-(function() {
-  function initMCQ() {
-    var groups = document.querySelectorAll('.mcq-group');
-    groups.forEach(function(group) {
-      if (group.getAttribute('data-mcq-init') === 'true') return;
-      group.setAttribute('data-mcq-init', 'true');
-      var button = group.querySelector('.mcq-check-btn');
-      if (!button) return;
-      button.addEventListener('click', function() {
-        var required = parseInt(group.getAttribute('data-required'), 10) || 1;
-        var labels = group.querySelectorAll('label[data-correct]');
-        var correct = 0, incorrect = 0;
-        labels.forEach(function(label) {
-          var cb = label.querySelector('input[type="checkbox"]');
-          if (cb && cb.checked) {
-            if (label.getAttribute('data-correct') === 'true') correct++; else incorrect++;
-          }
-        });
-        var ok = correct === required && incorrect === 0;
-        var cm = group.querySelector('.mcq-correct');
-        var im = group.querySelector('.mcq-incorrect');
-        if (cm) cm.style.display = ok ? 'block' : 'none';
-        if (im) im.style.display = ok ? 'none' : 'block';
-      });
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initMCQ);
-  else initMCQ();
-})();
-<\/script>`;
-
-var SR_SCRIPT = `<script>
-(function() {
-  function initCarousel() {
-    var cars = document.querySelectorAll('.sr-carousel');
-    cars.forEach(function(car) {
-      if (car.getAttribute('data-sr-init') === 'true') return;
-      car.setAttribute('data-sr-init', 'true');
-      var slides = car.querySelectorAll('.sr-slide');
-      var prev = car.querySelector('.sr-prev');
-      var next = car.querySelector('.sr-next');
-      var counter = car.querySelector('.sr-counter');
-      var dots = car.querySelectorAll('.sr-dot');
-      var idx = 0;
-      function setDisabled(btn, st){ if(!btn) return; btn.disabled=st; btn.style.opacity=st?'0.4':'1'; btn.style.cursor=st?'default':'pointer'; }
-      function show(i){
-        idx=i;
-        slides.forEach(function(s,n){ s.style.display=(n===i)?'block':'none'; s.setAttribute('aria-hidden',(n===i)?'false':'true'); });
-        dots.forEach(function(d,n){ var on=(n===i); d.style.background=on?'#1a4b8c':'#cdd5e0'; if(on) d.setAttribute('aria-current','true'); else d.removeAttribute('aria-current'); });
-        if(counter) counter.textContent='Scenario '+(i+1)+' of '+slides.length;
-        setDisabled(prev,i===0); setDisabled(next,i===slides.length-1);
-      }
-      if(prev) prev.addEventListener('click', function(){ if(idx>0) show(idx-1); });
-      if(next) next.addEventListener('click', function(){ if(idx<slides.length-1) show(idx+1); });
-      dots.forEach(function(d){ d.addEventListener('click', function(){ show(parseInt(d.getAttribute('data-idx'),10)); }); });
-      var btns = car.querySelectorAll('.sr-btn');
-      btns.forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var slide=btn.closest('.sr-slide'); var ans=slide.querySelector('.sr-answer');
-          var open=ans.style.display==='block';
-          ans.style.display=open?'none':'block';
-          btn.setAttribute('aria-expanded',open?'false':'true');
-          btn.textContent=open?'Reveal answer':'Hide answer';
-        });
-        btn.addEventListener('focus', function(){ btn.style.outline='3px solid #1a4b8c'; btn.style.outlineOffset='2px'; });
-        btn.addEventListener('blur', function(){ btn.style.outline=''; btn.style.outlineOffset=''; });
-      });
-      show(0);
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCarousel);
-  else initCarousel();
-})();
-<\/script>`;
-
-var FC_SCRIPT = `<script>
-(function() {
-  function initFlashcards() {
-    var cards = document.querySelectorAll('.flashcard');
-    cards.forEach(function(card) {
-      if (card.getAttribute('data-fc-init') === 'true') return;
-      card.setAttribute('data-fc-init', 'true');
-      card.addEventListener('click', function() {
-        var flipped = card.getAttribute('aria-pressed') === 'true';
-        card.setAttribute('aria-pressed', flipped ? 'false' : 'true');
-        var front = card.querySelector('.fc-front');
-        var back = card.querySelector('.fc-back');
-        var inner = card.querySelector('.fc-inner');
-        if (front) front.setAttribute('aria-hidden', flipped ? 'false' : 'true');
-        if (back) back.setAttribute('aria-hidden', flipped ? 'true' : 'false');
-        if (inner) inner.style.transform = flipped ? 'rotateY(0deg)' : 'rotateY(180deg)';
-      });
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFlashcards);
-  else initFlashcards();
-})();
-<\/script>`;
-
-var WR_SCRIPT = `<script>
-(function() {
-  function initWR() {
-    var blocks = document.querySelectorAll('.wr-block');
-    blocks.forEach(function(block) {
-      if (block.getAttribute('data-wr-init') === 'true') return;
-      block.setAttribute('data-wr-init', 'true');
-      var btn = block.querySelector('.wr-reveal-btn');
-      var panel = block.querySelector('.wr-suggested');
-      if (!btn || !panel) return;
-      btn.addEventListener('click', function() {
-        var open = btn.getAttribute('aria-expanded') === 'true';
-        btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-        panel.style.display = open ? 'none' : 'block';
-        btn.textContent = open ? 'Show suggested answers' : 'Hide suggested answers';
-      });
-      btn.addEventListener('focus', function() { btn.style.outline = '3px solid #1a4b8c'; btn.style.outlineOffset = '2px'; });
-      btn.addEventListener('blur', function() { btn.style.outline = ''; btn.style.outlineOffset = ''; });
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initWR);
-  else initWR();
-})();
-<\/script>`;
-
-var FLOW_SCRIPT = `<script>
-(function() {
-  function initFlowchart() {
-    var trees = document.querySelectorAll('.fc-tree');
-    trees.forEach(function(tree) {
-      if (tree.getAttribute('data-flow-init') === 'true') return;
-      tree.setAttribute('data-flow-init', 'true');
-      var buttonsGroup = tree.querySelector('.fc-buttons');
-      var yesPath = tree.querySelector('.fc-yes-path');
-      var noPath = tree.querySelector('.fc-no-path');
-      var yesBtn = tree.querySelector('.fc-btn-yes');
-      var noBtn = tree.querySelector('.fc-btn-no');
-      var resetBtns = tree.querySelectorAll('.fc-btn-reset');
-      if (yesBtn) yesBtn.addEventListener('click', function() { buttonsGroup.style.display = 'none'; if (yesPath) yesPath.style.display = 'block'; if (noPath) noPath.style.display = 'none'; });
-      if (noBtn) noBtn.addEventListener('click', function() { buttonsGroup.style.display = 'none'; if (yesPath) yesPath.style.display = 'none'; if (noPath) noPath.style.display = 'block'; });
-      resetBtns.forEach(function(btn) { btn.addEventListener('click', function() { buttonsGroup.style.display = 'flex'; if (yesPath) yesPath.style.display = 'none'; if (noPath) noPath.style.display = 'none'; }); });
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFlowchart);
-  else initFlowchart();
-})();
-<\/script>`;
-
-var DD_SCRIPT = `<script>
-(function() {
-  function initDragDrop() {
-    var blocks = document.querySelectorAll('.dd-block');
-    blocks.forEach(function(block) {
-      if (block.getAttribute('data-dd-init') === 'true') return;
-      block.setAttribute('data-dd-init', 'true');
-      var pool = block.querySelector('.dd-pool');
-      var buckets = block.querySelectorAll('.dd-bucket');
-      var feedback = block.querySelector('.dd-feedback');
-      var live = block.querySelector('.dd-live');
-      var checkBtn = block.querySelector('.dd-check');
-      var resetBtn = block.querySelector('.dd-reset');
-      var pickedUp = null;
-      function announce(msg) { live.textContent = msg; }
-      function clearFeedback() {
-        feedback.style.display = 'none';
-        block.querySelectorAll('.dd-item').forEach(function(item) { item.style.borderColor = '#1a4b8c'; item.style.background = '#fff'; });
-      }
-      function cancelPickup() {
-        if (pickedUp) { pickedUp.style.background = '#fff'; pickedUp.style.color = '#0e2b3c'; pickedUp.style.transform = ''; announce('Pickup cancelled'); pickedUp = null; }
-      }
-      function pickUp(item) {
-        if (pickedUp) cancelPickup();
-        pickedUp = item; item.style.background = '#1a4b8c'; item.style.color = '#fff'; item.style.transform = 'translateY(-2px)';
-        announce(item.textContent + ' picked up. Tab to a bucket and press Space to drop, or press Escape to cancel.');
-      }
-      block.addEventListener('dragstart', function(e) {
-        var item = e.target.closest('.dd-item'); if (!item) return;
-        e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'dragging');
-        item.setAttribute('data-dragging', 'true'); item.style.opacity = '0.45';
-      });
-      block.addEventListener('dragend', function(e) {
-        var item = e.target.closest('.dd-item'); if (item) { item.removeAttribute('data-dragging'); item.style.opacity = ''; }
-      });
-      buckets.forEach(function(bucket) {
-        bucket.addEventListener('dragover', function(e) { e.preventDefault(); bucket.style.borderColor = '#1a4b8c'; bucket.style.background = '#eef4fb'; });
-        bucket.addEventListener('dragleave', function() { bucket.style.borderColor = '#cbd5e1'; bucket.style.background = '#f8fafc'; });
-        bucket.addEventListener('drop', function(e) {
-          e.preventDefault(); bucket.style.borderColor = '#cbd5e1'; bucket.style.background = '#f8fafc';
-          var dragging = block.querySelector('[data-dragging="true"]');
-          if (dragging) { bucket.appendChild(dragging); announce(dragging.textContent + ' dropped into ' + bucket.querySelector('h4').textContent); clearFeedback(); }
-        });
-        bucket.addEventListener('keydown', function(e) {
-          if (pickedUp && (e.key === ' ' || e.key === 'Enter')) {
-            e.preventDefault(); bucket.appendChild(pickedUp); announce(pickedUp.textContent + ' dropped into ' + bucket.querySelector('h4').textContent);
-            pickedUp.style.background = '#fff'; pickedUp.style.color = '#0e2b3c'; pickedUp.style.transform = ''; pickedUp = null; clearFeedback();
-          } else if (e.key === 'Escape') { cancelPickup(); }
-        });
-      });
-      pool.addEventListener('dragover', function(e) { e.preventDefault(); });
-      pool.addEventListener('drop', function(e) {
-        e.preventDefault(); var dragging = block.querySelector('[data-dragging="true"]');
-        if (dragging) { pool.appendChild(dragging); announce(dragging.textContent + ' returned to items list'); clearFeedback(); }
-      });
-      block.addEventListener('keydown', function(e) {
-        var item = e.target.closest('.dd-item');
-        if (item) {
-          if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (pickedUp === item) cancelPickup(); else pickUp(item); }
-          else if (e.key === 'Escape') { cancelPickup(); }
-        }
-      });
-      checkBtn.addEventListener('click', function() {
-        var items = block.querySelectorAll('.dd-item'); var allSorted = true; var correctCount = 0; var totalCount = items.length;
-        items.forEach(function(item) {
-          if (item.closest('.dd-pool')) { allSorted = false; return; }
-          var bucket = item.closest('.dd-bucket');
-          if (bucket.getAttribute('data-category') === item.getAttribute('data-correct')) { item.style.borderColor = '#2e7d32'; item.style.background = '#f0fdf4'; correctCount++; }
-          else { item.style.borderColor = '#c0392b'; item.style.background = '#fef2f2'; }
-        });
-        if (!allSorted) {
-          feedback.setAttribute('style', 'display:block; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem; background:#fee2e2; color:#7f1d1d; border-left:4px solid #c0392b;');
-          feedback.innerHTML = '<strong>Not yet.</strong> Sort all items into a bucket before checking your answers.'; announce('Not all items sorted yet.'); return;
-        }
-        if (correctCount === totalCount) {
-          feedback.setAttribute('style', 'display:block; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem; background:#d1fae5; color:#064e3b; border-left:4px solid #2e7d32;');
-          feedback.innerHTML = '<strong>&#10003; All correct.</strong> ' + (block.getAttribute('data-correct-msg') || ''); announce('All items sorted correctly.');
-        } else {
-          feedback.setAttribute('style', 'display:block; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem; background:#fef9c3; color:#713f12; border-left:4px solid #ca8a04;');
-          feedback.innerHTML = '<strong>You got ' + correctCount + ' out of ' + totalCount + ' right.</strong> Incorrect items are outlined in red. Move them to the other bucket and check again.'; announce(correctCount + ' out of ' + totalCount + ' correct.');
-        }
-      });
-      resetBtn.addEventListener('click', function() {
-        block.querySelectorAll('.dd-item').forEach(function(item) { item.style.borderColor = '#1a4b8c'; item.style.background = '#fff'; item.style.color = '#0e2b3c'; item.style.transform = ''; pool.appendChild(item); });
-        pickedUp = null; feedback.style.display = 'none'; announce('Activity reset. All items returned to the items list.');
-      });
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDragDrop);
-  else initDragDrop();
-})();
-<\/script>`;
-
-var TS_SCRIPT = `<script>
-(function() {
-  function initTapSort() {
-    var blocks = document.querySelectorAll('.ts-block');
-    blocks.forEach(function(block) {
-      if (block.getAttribute('data-ts-init') === 'true') return;
-      block.setAttribute('data-ts-init', 'true');
-      var pool = block.querySelector('.ts-pool');
-      var feedback = block.querySelector('.ts-feedback');
-      var c1key = block.getAttribute('data-c1-key');
-      var c2key = block.getAttribute('data-c2-key');
-      var c1label = block.getAttribute('data-c1-label');
-      var c2label = block.getAttribute('data-c2-label');
-      var b1 = block.querySelector('.ts-bucket[data-category="' + c1key + '"] .ts-bucket-items');
-      var b2 = block.querySelector('.ts-bucket[data-category="' + c2key + '"] .ts-bucket-items');
-      var checkBtn = block.querySelector('.ts-check');
-      var resetBtn = block.querySelector('.ts-reset');
-      function updateBucketEmpty(bucketItems) {
-        var hasItems = bucketItems.querySelector('.ts-item');
-        var empty = bucketItems.querySelector('.ts-bucket-empty');
-        if (hasItems && empty) empty.remove();
-        if (!hasItems && !empty) {
-          var msg = document.createElement('div');
-          msg.className = 'ts-bucket-empty';
-          msg.setAttribute('style', 'color:#94a3b8; font-size:.8rem; font-style:italic; text-align:center; padding:1rem 0;');
-          msg.textContent = 'Nothing placed here yet';
-          bucketItems.appendChild(msg);
-        }
-      }
-      function clearFeedback() {
-        feedback.style.display = 'none';
-        block.querySelectorAll('.ts-item').forEach(function(item) { item.style.borderColor = '#e2e8f0'; item.style.background = '#fff'; });
-      }
-      function abtn(key, label) {
-        return '<button type="button" class="ts-assign" data-target="' + key + '" aria-label="Sort as ' + label + '" style="background:#fff; border:1px solid #1a4b8c; color:#1a4b8c; padding:.35rem .8rem; font-size:.82rem; font-weight:600; border-radius:.35rem; cursor:pointer; font-family:inherit;">' + label + '</button>';
-      }
-      function makeAssignButtons() { return abtn(c1key, c1label) + abtn(c2key, c2label); }
-      function makeRemoveButton(itemText) {
-        var safe = itemText.replace(/"/g, '&quot;');
-        return '<button type="button" class="ts-remove" aria-label="Remove ' + safe + ' from this bucket" style="background:transparent; border:none; color:#64748b; padding:.25rem .5rem; font-size:1rem; cursor:pointer; border-radius:.3rem; line-height:1; font-family:inherit;">&times;</button>';
-      }
-      block.addEventListener('click', function(e) {
-        var assignBtn = e.target.closest('.ts-assign');
-        var removeBtn = e.target.closest('.ts-remove');
-        if (assignBtn) {
-          var item = assignBtn.closest('.ts-item');
-          var category = assignBtn.getAttribute('data-target');
-          item.querySelector('.ts-actions').innerHTML = makeRemoveButton(item.querySelector('.ts-item-text').textContent);
-          var target = category === c1key ? b1 : b2;
-          target.appendChild(item);
-          updateBucketEmpty(b1); updateBucketEmpty(b2); clearFeedback();
-        } else if (removeBtn) {
-          var rItem = removeBtn.closest('.ts-item');
-          rItem.querySelector('.ts-actions').innerHTML = makeAssignButtons();
-          rItem.style.borderColor = '#e2e8f0'; rItem.style.background = '#fff';
-          pool.appendChild(rItem);
-          updateBucketEmpty(b1); updateBucketEmpty(b2); clearFeedback();
-        }
-      });
-      checkBtn.addEventListener('click', function() {
-        var items = block.querySelectorAll('.ts-item'); var allSorted = true; var correctCount = 0; var totalCount = items.length;
-        items.forEach(function(item) {
-          var parent = item.closest('.ts-bucket-items, .ts-pool');
-          if (parent === pool) { allSorted = false; return; }
-          var bucket = item.closest('.ts-bucket');
-          if (bucket.getAttribute('data-category') === item.getAttribute('data-correct')) { item.style.borderColor = '#2e7d32'; item.style.background = '#f0fdf4'; correctCount++; }
-          else { item.style.borderColor = '#c0392b'; item.style.background = '#fef2f2'; }
-        });
-        if (!allSorted) {
-          feedback.setAttribute('style', 'display:block; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem; background:#fee2e2; color:#7f1d1d; border-left:4px solid #c0392b;');
-          feedback.innerHTML = '<strong>Not yet.</strong> Sort all items into a category before checking your answers.'; return;
-        }
-        if (correctCount === totalCount) {
-          feedback.setAttribute('style', 'display:block; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem; background:#d1fae5; color:#064e3b; border-left:4px solid #2e7d32;');
-          feedback.innerHTML = '<strong>&#10003; All correct.</strong> ' + (block.getAttribute('data-correct-msg') || '');
-        } else {
-          feedback.setAttribute('style', 'display:block; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem; background:#fef9c3; color:#713f12; border-left:4px solid #ca8a04;');
-          feedback.innerHTML = '<strong>You got ' + correctCount + ' out of ' + totalCount + ' right.</strong> Incorrect items are outlined in red. Remove them and try the other category.';
-        }
-      });
-      resetBtn.addEventListener('click', function() {
-        block.querySelectorAll('.ts-item').forEach(function(item) {
-          item.style.borderColor = '#e2e8f0'; item.style.background = '#fff';
-          item.querySelector('.ts-actions').innerHTML = makeAssignButtons();
-          pool.appendChild(item);
-        });
-        updateBucketEmpty(b1); updateBucketEmpty(b2); feedback.style.display = 'none';
-      });
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initTapSort);
-  else initTapSort();
-})();
-<\/script>`;
-
-var GEN_HEADER = '<!-- Generated with the BKI Activity Builder. Filter-safe: IIFE, addEventListener, class and data-* selectors, real buttons, init guard, DOMContentLoaded. No en/em dashes, no smart quotes. Paste into Moodle source view, then save. -->\n';
-
-/* ---------- answer mini-parser for scenario reveal ----------
-   Blank line separates blocks.
-   "- " line  -> bullet list item (consecutive grouped)
-   "= " line  -> calculation line, monospace box (consecutive grouped)
-   line starting with a lightbulb, or "tip:" -> highlighted tip
-   anything else -> paragraph                                            */
-function parseAnswer(raw){
-  var lines = scrub(raw).split(/\n/);
-  var blocks=[], buf=null, bufType=null;
-  function flush(){ if(buf){ blocks.push([bufType,buf]); buf=null; bufType=null; } }
-  lines.forEach(function(ln){
-    var t=ln.trim();
-    if(t===''){ flush(); return; }
-    if(t.indexOf('- ')===0){ if(bufType!=='ul'){ flush(); buf=[]; bufType='ul'; } buf.push(t.slice(2).trim()); }
-    else if(t.indexOf('= ')===0){ if(bufType!=='calc'){ flush(); buf=[]; bufType='calc'; } buf.push(t.slice(2).trim()); }
-    else if(t.charAt(0)==='\uD83D' || t.toLowerCase().indexOf('tip:')===0){
-      flush();
-      var txt = t.toLowerCase().indexOf('tip:')===0 ? ('\uD83D\uDCA1 '+t.slice(4).trim()) : t;
-      blocks.push(['tip',txt]);
-    }
-    else { flush(); blocks.push(['p',t]); }
-  });
-  flush();
-  return blocks;
+/* Blank line = new paragraph. Single newlines inside a block become spaces. */
+function paras(raw){
+  var t = scrub(raw);
+  if(!t) return [];
+  return t.split(/\n{2,}/).map(function(p){ return p.replace(/\n/g,' ').trim(); }).filter(Boolean);
 }
-function renderAnswer(blocks){
-  return blocks.map(function(b){
-    var t=b[0], v=b[1];
-    if(t==='p') return '<p style="margin:0 0 .55rem;">'+esc(v)+'</p>';
-    if(t==='tip') return '<p style="margin:.4rem 0 0; padding-top:.5rem; border-top:1px solid #d4e0d4;">'+esc(v)+'</p>';
-    if(t==='ul') return '<ul style="margin:0 0 .55rem; padding-left:1.2rem;">'+v.map(function(x){return '<li style="margin-bottom:.2rem;">'+esc(x)+'</li>';}).join('')+'</ul>';
-    if(t==='calc') return '<div style="background:#fff; border:1px solid #d4e0d4; border-radius:.3rem; padding:.6rem .7rem; margin:0 0 .55rem; overflow-wrap:break-word;">'+v.map(function(x){return '<p style="margin:0 0 .25rem; font-family:\'Courier New\',monospace; font-size:.88rem;">'+esc(x)+'</p>';}).join('')+'</div>';
-    return '';
-  }).join('');
+function pTags(raw, indent){
+  var pad = indent || '';
+  return paras(raw).map(function(p){ return pad+'<p>'+esc(p)+'</p>'; }).join('\n');
+}
+/* Sanitise a fragment id: word characters and hyphens only. */
+function idSafe(raw, fallback){
+  var s = scrub(raw).replace(/[^\w-]/g,'');
+  return s || fallback;
 }
 
-/* ================= ACTIVITY DEFINITIONS ================= */
+var GEN_HEADER = '<!-- Generated with the BKI Activity Builder (snippet edition). No custom JavaScript: interactivity uses the Moodle theme Bootstrap collapse and tabs only. No en or em dashes, no smart quotes. Paste into Moodle source view, then save. -->\n';
+
+var LOREM1 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
+var LOREM2 = 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+var LOREM3 = 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.';
+
+/* Shared form + build for the two image layouts. */
+function imageFields(form, p){
+  add(form,
+    '<label class="fld" for="'+p+'_src">Image URL</label>'+
+    '<input type="text" id="'+p+'_src" value="https://placehold.co/320x235.png?text=Replace+Me">'+
+    '<p class="hint">Use the final Moodle file URL with any ?time= cache-buster removed.</p>'+
+    '<label class="fld" for="'+p+'_w">Image width (px)</label>'+
+    '<input type="text" id="'+p+'_w" value="320">'+
+    '<label class="fld" for="'+p+'_h">Image height (px)</label>'+
+    '<input type="text" id="'+p+'_h" value="235">'+
+    '<label class="fld" for="'+p+'_alt">Alt text</label>'+
+    '<input type="text" id="'+p+'_alt" value="">'+
+    '<p class="hint">Informative and concise. Leave blank only if the image is decorative.</p>'+
+    '<label class="fld" for="'+p+'_attr">Attribution</label>'+
+    '<input type="text" id="'+p+'_attr" value="Attribution goes here">'+
+    '<label class="fld" for="'+p+'_body">Body text</label>'+
+    '<textarea id="'+p+'_body" style="min-height:9rem;">'+LOREM1+'\n\n'+LOREM2+'\n\n'+LOREM3+'</textarea>'+
+    '<p class="hint">Blank line = new paragraph. This text sits beside the image and wraps under it.</p>');
+}
+function imageBuild(p, side){
+  var right = side === 'right';
+  var floatStyle = right
+    ? 'float: right; width: 30%; max-width: 320px; min-width: 200px; margin:0 0 10px 20px !important'
+    : 'float: left; width: 30%; max-width: 320px; min-width: 200px; margin:0 20px 10px 0 !important';
+  return GEN_HEADER+
+    '<!-- Text and image layout - image '+side+' -->\n'+
+    '<div class="float-'+side+'" style="'+floatStyle+'">\n'+
+    '    <img src="'+attr(scrub(val(p+'_src')))+'" width="'+attr(scrub(val(p+'_w')))+'" height="'+attr(scrub(val(p+'_h')))+'" alt="'+attr(scrub(val(p+'_alt')))+'" class="img-responsive w-100">\n'+
+    '    <div class="text-muted" style="opacity: 0.5">\n'+
+    '        <small>'+esc(scrub(val(p+'_attr')))+'</small> </div>\n'+
+    '</div>\n'+
+    '<!-- End of image -->\n'+
+    pTags(val(p+'_body'))+'\n'+
+    '<br><br>\n';
+}
+
 var ACTIVITIES = {
 
-  /* ---- Multiple choice (multi-answer, check button) ---- */
-  mcq: {
-    label: 'Multiple choice',
-    state: { options: [
-      {text:'', correct:true}, {text:'', correct:false},
-      {text:'', correct:true}, {text:'', correct:false}
-    ]},
-    renderFields: function(form){
-      var self=this;
-      add(form,
-        '<label class="fld" for="mcq_heading">Activity heading</label>'+
-        '<input type="text" id="mcq_heading" value="Check your understanding">'+
-        '<label class="fld" for="mcq_prompt">Prompt / question line</label>'+
-        '<input type="text" id="mcq_prompt" value="Which of the statements below are correct? Select the correct answers.">'+
-        '<label class="fld">Options <span class="hint">tick the box for each correct option; letters A, B, C are added automatically</span></label>'+
-        '<div id="mcq_opts"></div>'+
-        '<div class="row-actions"><button type="button" class="btn ghost sm" id="mcq_add">Add option</button></div>'+
-        '<label class="fld" for="mcq_cfb">Correct feedback</label>'+
-        '<textarea id="mcq_cfb">Well done. That is right.</textarea>'+
-        '<label class="fld" for="mcq_ifb">Incorrect feedback</label>'+
-        '<textarea id="mcq_ifb">Not quite. Review the section and try again.</textarea>'
-      );
-      var box=document.getElementById('mcq_opts');
-      function draw(){
-        box.innerHTML='';
-        self.state.options.forEach(function(o,i){
-          var row=document.createElement('div'); row.className='opt-row';
-          row.innerHTML='<div class="top">'+
-            '<input type="text" data-i="'+i+'" class="mcq_otext" placeholder="Option text">'+
-            '<label class="chk"><input type="checkbox" data-i="'+i+'" class="mcq_ocorr" '+(o.correct?'checked':'')+'> correct</label>'+
-            '<button type="button" class="btn danger sm mcq_odel" data-i="'+i+'">Remove</button></div>';
-          box.appendChild(row);
-          row.querySelector('.mcq_otext').value=o.text;
-        });
-        box.querySelectorAll('.mcq_otext').forEach(function(el){ el.addEventListener('input', function(){ self.state.options[+el.dataset.i].text=el.value; }); });
-        box.querySelectorAll('.mcq_ocorr').forEach(function(el){ el.addEventListener('change', function(){ self.state.options[+el.dataset.i].correct=el.checked; }); });
-        box.querySelectorAll('.mcq_odel').forEach(function(el){ el.addEventListener('click', function(){ if(self.state.options.length>2){ self.state.options.splice(+el.dataset.i,1); draw(); } }); });
-      }
-      draw();
-      document.getElementById('mcq_add').addEventListener('click', function(){ if(self.state.options.length<8){ self.state.options.push({text:'',correct:false}); draw(); } });
-    },
-    rawTexts: function(){
-      var t=[val('mcq_heading'),val('mcq_prompt'),val('mcq_cfb'),val('mcq_ifb')];
-      this.state.options.forEach(function(o){ t.push(o.text); });
-      return t;
-    },
-    build: function(){
-      var letters='ABCDEFGH';
-      var required=this.state.options.filter(function(o){return o.correct;}).length || 1;
-      var labels=this.state.options.map(function(o,i){
-        return '  <label style="display:flex; align-items:flex-start; gap:.75rem; padding:.55rem .85rem; margin-bottom:.45rem; border:1px solid #dee2e6; border-radius:.35rem; cursor:pointer; font-size:.92rem;" data-correct="'+(o.correct?'true':'false')+'">\n'+
-          '    <input type="checkbox" style="margin-top:.2rem; flex-shrink:0;"> '+letters[i]+'. '+esc(scrub(o.text))+'\n  </label>';
-      }).join('\n');
-      return GEN_HEADER+
-        '<div class="well card padd10px"><h4 class="reflect-heading text-success"><i aria-hidden="true" class="fa fa-lightbulb-o"></i>&nbsp;'+esc(scrub(val('mcq_heading')))+'</h4><div class="reflect-content">\n'+
-        '<p>'+esc(scrub(val('mcq_prompt')))+'</p>\n\n'+
-        '<div class="mcq-group" data-mcq-id="mcq-sub1" data-required="'+required+'">\n\n'+
-        labels+'\n\n'+
-        '  <button class="mcq-check-btn" style="background:#1a4b8c; color:#fff; border:none; padding:.45rem 1.2rem; border-radius:.35rem; font-size:.88rem; cursor:pointer; margin-top:.75rem;">Check answer</button>\n\n'+
-        '  <div class="mcq-correct" style="display:none; margin-top:.75rem; padding:.7rem 1rem; border-radius:.35rem; background:#d1fae5; color:#064e3b; border:1px solid #6ee7b7; font-size:.88rem;">\n    <strong>&#10003; Correct!</strong> '+esc(scrub(val('mcq_cfb')))+'\n  </div>\n'+
-        '  <div class="mcq-incorrect" style="display:none; margin-top:.75rem; padding:.7rem 1rem; border-radius:.35rem; background:#fee2e2; color:#7f1d1d; border:1px solid #fca5a5; font-size:.88rem;">\n    <strong>Not quite.</strong> '+esc(scrub(val('mcq_ifb')))+'\n  </div>\n\n'+
-        '</div>\n\n</div></div><!-- End of activity -->\n\n'+MCQ_SCRIPT+'\n';
-    }
+  /* ---- 1. Text and image, image right ---- */
+  imgright: {
+    label: 'Text + image (right)',
+    state: {},
+    renderFields: function(form){ imageFields(form,'ir'); },
+    rawTexts: function(){ return [val('ir_src'),val('ir_alt'),val('ir_attr'),val('ir_body')]; },
+    build: function(){ return imageBuild('ir','right'); }
   },
 
-  /* ---- Scenario reveal carousel ---- */
-  scenario: {
-    label: 'Scenario reveal (carousel)',
-    state: { scenarios: [
-      {scenario:'', question:'', answer:''},
-      {scenario:'', question:'', answer:''},
-      {scenario:'', question:'', answer:''}
-    ]},
-    renderFields: function(form){
-      var self=this;
-      add(form,
-        '<label class="fld" for="sr_heading">Activity heading</label>'+
-        '<input type="text" id="sr_heading" value="Scenario check">'+
-        '<label class="fld" for="sr_intro">Intro line</label>'+
-        '<input type="text" id="sr_intro" value="Read the scenario and think about your answer. Select Reveal answer to check your thinking, then select Next to move on.">'+
-        '<label class="fld">Scenarios</label>'+
-        '<p class="hint">In the answer box: a blank line starts a new paragraph. Start a line with "- " for a bullet, "= " for a calculation line (monospace), or "tip:" for a highlighted tip.</p>'+
-        '<div id="sr_scns"></div>'+
-        '<div class="row-actions"><button type="button" class="btn ghost sm" id="sr_add">Add scenario</button></div>'
-      );
-      var box=document.getElementById('sr_scns');
-      function draw(){
-        box.innerHTML='';
-        self.state.scenarios.forEach(function(s,i){
-          var d=document.createElement('div'); d.className='scn';
-          d.innerHTML='<label class="fld">Scenario '+(i+1)+
-            ' <button type="button" class="btn danger sm sr_del" data-i="'+i+'" style="float:right;">Remove</button></label>'+
-            '<textarea class="sr_s" data-i="'+i+'" placeholder="Scenario text"></textarea>'+
-            '<label class="fld">Question</label>'+
-            '<input type="text" class="sr_q" data-i="'+i+'" placeholder="Question">'+
-            '<label class="fld">Answer (revealed)</label>'+
-            '<textarea class="sr_a" data-i="'+i+'" placeholder="Answer" style="min-height:7rem;"></textarea>';
-          box.appendChild(d);
-          d.querySelector('.sr_s').value=s.scenario;
-          d.querySelector('.sr_q').value=s.question;
-          d.querySelector('.sr_a').value=s.answer;
-        });
-        box.querySelectorAll('.sr_s').forEach(function(el){ el.addEventListener('input',function(){ self.state.scenarios[+el.dataset.i].scenario=el.value; }); });
-        box.querySelectorAll('.sr_q').forEach(function(el){ el.addEventListener('input',function(){ self.state.scenarios[+el.dataset.i].question=el.value; }); });
-        box.querySelectorAll('.sr_a').forEach(function(el){ el.addEventListener('input',function(){ self.state.scenarios[+el.dataset.i].answer=el.value; }); });
-        box.querySelectorAll('.sr_del').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.scenarios.length>1){ self.state.scenarios.splice(+el.dataset.i,1); draw(); } }); });
-      }
-      draw();
-      document.getElementById('sr_add').addEventListener('click', function(){ self.state.scenarios.push({scenario:'',question:'',answer:''}); draw(); });
-    },
-    rawTexts: function(){
-      var t=[val('sr_heading'),val('sr_intro')];
-      this.state.scenarios.forEach(function(s){ t.push(s.scenario,s.question,s.answer); });
-      return t;
-    },
-    build: function(){
-      var n=this.state.scenarios.length;
-      var slides=this.state.scenarios.map(function(s,k){
-        var i=k+1, active=(k===0);
-        var chip='<span style="display:inline-block; align-self:flex-start; background:'+BLUE+'; color:#ffffff; font-weight:700; font-size:.78rem; letter-spacing:.02em; padding:.22rem .6rem; border-radius:.3rem; margin-bottom:.6rem;">Scenario '+i+'</span>';
-        var scen='<p style="font-size:.95rem; margin:0 0 .6rem;">'+esc(scrub(s.scenario))+'</p>';
-        var ques='<p style="font-size:.95rem; font-weight:700; color:'+BLUE+'; margin:0 0 .9rem;">Question: '+esc(scrub(s.question))+'</p>';
-        var btn='<button type="button" class="sr-btn" aria-expanded="false" style="align-self:flex-start; background:'+BLUE+'; color:#ffffff; border:none; border-radius:.35rem; padding:.5rem .95rem; font-weight:700; font-size:.85rem; cursor:pointer;">Reveal answer</button>';
-        var ans='<div class="sr-answer" style="display:none; background:'+GREENBG+'; border-left:4px solid '+GREEN+'; border-radius:.35rem; padding:.85rem .9rem; margin-top:.75rem; font-size:.92rem; line-height:1.5;">'+renderAnswer(parseAnswer(s.answer))+'</div>';
-        return '<div class="sr-slide" aria-hidden="'+(active?'false':'true')+'" style="display:'+(active?'block':'none')+'; flex-direction:column; background:#ffffff; border:1px solid #dee2e6; border-top:4px solid '+BLUE+'; border-radius:.5rem; padding:1.25rem; overflow-wrap:break-word;">'+chip+scen+ques+btn+ans+'</div>';
-      }).join('');
-      var dots='';
-      for(var j=0;j<n;j++){ dots+='<button type="button" class="sr-dot" data-idx="'+j+'" aria-label="Go to scenario '+(j+1)+'"'+(j===0?' aria-current="true"':'')+' style="width:.75rem; height:.75rem; border-radius:50%; border:none; padding:0; background:'+(j===0?BLUE:'#cdd5e0')+'; cursor:pointer;"></button>'; }
-      var navbtn='background:transparent; border:2px solid #1a4b8c; border-radius:.25rem; width:2.8rem; height:2.8rem; padding:0; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; line-height:0;';
-      var arrowL='<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 9 H11 V5 L3 12 L11 19 V15 H21 Z" fill="#ffffff" stroke="#1a4b8c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
-      var arrowR='<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 9 H13 V5 L21 12 L13 19 V15 H3 Z" fill="#ffffff" stroke="#1a4b8c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
-      var controls='<div class="sr-controls" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-top:1rem; flex-wrap:wrap;">\n'+
-        '  <button type="button" class="sr-prev" aria-label="Previous scenario" style="'+navbtn+'">'+arrowL+'</button>\n'+
-        '  <div style="display:flex; flex-direction:column; align-items:center; gap:.45rem;">\n'+
-        '    <div class="sr-dots" style="display:flex; gap:.45rem;">'+dots+'</div>\n'+
-        '    <span class="sr-counter" aria-live="polite" style="font-size:.8rem; color:'+BLUE+'; font-weight:700;">Scenario 1 of '+n+'</span>\n'+
-        '  </div>\n'+
-        '  <button type="button" class="sr-next" aria-label="Next scenario" style="'+navbtn+'">'+arrowR+'</button>\n'+
-        '</div>';
-      return GEN_HEADER+
-        '<div class="well card padd10px">\n'+
-        '<h4 class="reflect-heading text-success"><i aria-hidden="true" class="fa fa-lightbulb-o"></i>&nbsp;'+esc(scrub(val('sr_heading')))+'</h4>\n<div class="reflect-content">\n'+
-        '<p>'+esc(scrub(val('sr_intro')))+'</p>\n'+
-        '<div class="sr-carousel">\n'+slides+'\n'+controls+'\n</div>\n'+
-        '</div></div><!-- End of activity -->\n\n'+SR_SCRIPT+'\n';
-    }
+  /* ---- 2. Text and image, image left ---- */
+  imgleft: {
+    label: 'Text + image (left)',
+    state: {},
+    renderFields: function(form){ imageFields(form,'il'); },
+    rawTexts: function(){ return [val('il_src'),val('il_alt'),val('il_attr'),val('il_body')]; },
+    build: function(){ return imageBuild('il','left'); }
   },
 
-  /* ---- Flashcards ---- */
-  flashcards: {
-    label: 'Flashcards',
-    state: { cards: [ {front:'',back:''}, {front:'',back:''}, {front:'',back:''} ] },
-    renderFields: function(form){
-      var self=this;
-      add(form,
-        '<label class="fld" for="fc_heading">Activity heading</label>'+
-        '<input type="text" id="fc_heading" value="Flashcard review">'+
-        '<label class="fld" for="fc_intro">Intro line</label>'+
-        '<input type="text" id="fc_intro" value="Tap or press a card to reveal the answer. Tap again to flip back.">'+
-        '<label class="fld" for="fc_perrow">Cards per row <span class="hint">on wide screens; wraps to fewer on mobile</span></label>'+
-        '<select id="fc_perrow" style="width:100%; padding:.5rem .6rem; border:1px solid var(--line); border-radius:.35rem; font-size:.9rem; font-family:inherit;"><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select>'+
-        '<label class="fld">Cards</label>'+
-        '<div id="fc_cards"></div>'+
-        '<div class="row-actions"><button type="button" class="btn ghost sm" id="fc_add">Add card</button></div>');
-      var box=document.getElementById('fc_cards');
-      function draw(){
-        box.innerHTML='';
-        self.state.cards.forEach(function(c,i){
-          var d=document.createElement('div'); d.className='scn';
-          d.innerHTML='<label class="fld">Card '+(i+1)+' <button type="button" class="btn danger sm fc_del" data-i="'+i+'" style="float:right;">Remove</button></label>'+
-            '<label class="fld">Front (question)</label><textarea class="fc_f" data-i="'+i+'"></textarea>'+
-            '<label class="fld">Back (answer)</label><textarea class="fc_b" data-i="'+i+'"></textarea>';
-          box.appendChild(d);
-          d.querySelector('.fc_f').value=c.front; d.querySelector('.fc_b').value=c.back;
-        });
-        box.querySelectorAll('.fc_f').forEach(function(el){ el.addEventListener('input',function(){ self.state.cards[+el.dataset.i].front=el.value; }); });
-        box.querySelectorAll('.fc_b').forEach(function(el){ el.addEventListener('input',function(){ self.state.cards[+el.dataset.i].back=el.value; }); });
-        box.querySelectorAll('.fc_del').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.cards.length>1){ self.state.cards.splice(+el.dataset.i,1); draw(); } }); });
-      }
-      draw();
-      document.getElementById('fc_add').addEventListener('click', function(){ self.state.cards.push({front:'',back:''}); draw(); });
-    },
-    rawTexts: function(){ var t=[val('fc_heading'),val('fc_intro')]; this.state.cards.forEach(function(c){ t.push(c.front,c.back); }); return t; },
-    build: function(){
-      var n=parseInt(val('fc_perrow'),10)||2;
-      var minw={2:220,3:180,4:150}[n]||180;
-      var basis='calc(100%/'+n+' - 1rem)';
-      var cards=this.state.cards.map(function(c){
-        return '  <button class="flashcard" aria-pressed="false" style="background:none; border:2px solid #1a4b8c; border-radius:0.5rem; height:240px; width:100%; max-width:none; min-width:'+minw+'px; flex:1 1 '+basis+'; cursor:pointer; perspective:800px; padding:0; font:inherit; text-align:left; color:inherit;">\n'+
-          '    <div class="fc-inner" style="position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform 0.5s ease; border-radius:0.5rem;">\n'+
-          '      <div class="fc-front" aria-hidden="false" style="position:absolute; top:0; left:0; right:0; bottom:0; backface-visibility:hidden; border-radius:0.5rem; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box; background:#1a4b8c; color:#fff;">\n'+
-          '        <div style="font-weight:600; font-size:0.9rem; flex:1; display:flex; align-items:center;">'+esc(scrub(c.front))+'</div>\n'+
-          '        <div style="font-size:0.7rem; opacity:0.7; margin-top:0.5rem;">Select to reveal answer</div>\n'+
-          '      </div>\n'+
-          '      <div class="fc-back" aria-hidden="true" style="position:absolute; top:0; left:0; right:0; bottom:0; backface-visibility:hidden; border-radius:0.5rem; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box; background:#fff; transform:rotateY(180deg);">\n'+
-          '        <div style="font-size:0.85rem; color:#212529; flex:1; overflow-y:auto;">'+esc(scrub(c.back))+'</div>\n'+
-          '        <div style="font-size:0.7rem; color:#666; margin-top:0.5rem;">Select to flip back</div>\n'+
-          '      </div>\n    </div>\n  </button>';
-      }).join('\n\n');
-      return GEN_HEADER+
-        '<div class="well card padd10px"><h4 class="reflect-heading text-success"><i aria-hidden="true" class="fa fa-lightbulb-o"></i>&nbsp;'+esc(scrub(val('fc_heading')))+'</h4><div class="reflect-content">\n'+
-        '<p>'+esc(scrub(val('fc_intro')))+'</p>\n\n'+
-        '<div class="fc-grid" style="display:flex; flex-wrap:wrap; gap:1rem; justify-content:center;">\n\n'+cards+'\n\n</div>\n\n'+
-        '</div></div><!-- End of activity -->\n\n'+FC_SCRIPT+'\n';
-    }
-  },
-
-  /* ---- Written response with suggested answers ---- */
-  written: {
-    label: 'Written response',
-    state: { items: [ {prompt:'',suggested:''}, {prompt:'',suggested:''}, {prompt:'',suggested:''} ] },
-    renderFields: function(form){
-      var self=this;
-      add(form,
-        '<label class="fld" for="wr_heading">Activity heading</label>'+
-        '<input type="text" id="wr_heading" value="Plain language practice">'+
-        '<label class="fld" for="wr_intro">Intro line</label>'+
-        '<input type="text" id="wr_intro" value="Read each prompt. Then write your answer in your own words.">'+
-        '<label class="fld">Prompts</label>'+
-        '<div id="wr_items"></div>'+
-        '<div class="row-actions"><button type="button" class="btn ghost sm" id="wr_add">Add prompt</button></div>');
-      var box=document.getElementById('wr_items');
-      function draw(){
-        box.innerHTML='';
-        self.state.items.forEach(function(it,i){
-          var d=document.createElement('div'); d.className='scn';
-          d.innerHTML='<label class="fld">Prompt '+(i+1)+' <button type="button" class="btn danger sm wr_del" data-i="'+i+'" style="float:right;">Remove</button></label>'+
-            '<input type="text" class="wr_p" data-i="'+i+'" placeholder="Prompt the learner responds to">'+
-            '<label class="fld">Suggested answer</label><textarea class="wr_s" data-i="'+i+'"></textarea>';
-          box.appendChild(d);
-          d.querySelector('.wr_p').value=it.prompt; d.querySelector('.wr_s').value=it.suggested;
-        });
-        box.querySelectorAll('.wr_p').forEach(function(el){ el.addEventListener('input',function(){ self.state.items[+el.dataset.i].prompt=el.value; }); });
-        box.querySelectorAll('.wr_s').forEach(function(el){ el.addEventListener('input',function(){ self.state.items[+el.dataset.i].suggested=el.value; }); });
-        box.querySelectorAll('.wr_del').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.items.length>1){ self.state.items.splice(+el.dataset.i,1); draw(); } }); });
-      }
-      draw();
-      document.getElementById('wr_add').addEventListener('click', function(){ self.state.items.push({prompt:'',suggested:''}); draw(); });
-    },
-    rawTexts: function(){ var t=[val('wr_heading'),val('wr_intro')]; this.state.items.forEach(function(it){ t.push(it.prompt,it.suggested); }); return t; },
-    build: function(){
-      var arr=this.state.items; var tok='wr-'+uid();
-      var fields=arr.map(function(it,i){
-        var id=tok+'-'+(i+1); var last=(i===arr.length-1);
-        return '  <div style="margin-bottom:'+(last?'1.25rem':'1rem')+';">\n'+
-          '    <label for="'+id+'" style="display:block; font-weight:600; font-size:.93rem; margin-bottom:.35rem; color:#212529; cursor:pointer;">'+esc(scrub(it.prompt))+'</label>\n'+
-          '    <textarea id="'+id+'" style="width:100%; border:1px solid #dee2e6; border-radius:.4rem; padding:.65rem .85rem; font-size:.92rem; resize:vertical; min-height:80px; box-sizing:border-box; background:#fff; font-family:inherit; color:inherit;" placeholder="Write your answer here."></textarea>\n  </div>';
-      }).join('\n\n');
-      var dl=arr.map(function(it,i){
-        var last=(i===arr.length-1);
-        return '      <dt style="font-weight:600; color:#212529; font-size:.93rem;">'+esc(scrub(it.prompt))+'</dt>\n'+
-          '      <dd style="color:#495057; font-size:.92rem; margin:0'+(last?'':' 0 .6rem 0')+'; padding-left:.75rem; border-left:2px solid #dee2e6;">'+esc(scrub(it.suggested))+'</dd>';
-      }).join('\n\n');
-      return GEN_HEADER+
-        '<div class="well card padd10px"><h4 class="reflect-heading text-success"><i aria-hidden="true" class="fa fa-lightbulb-o"></i>&nbsp;'+esc(scrub(val('wr_heading')))+'</h4><div class="reflect-content">\n'+
-        '<p>'+esc(scrub(val('wr_intro')))+'</p>\n\n'+
-        '<div class="wr-block">\n\n'+fields+'\n\n'+
-        '  <button type="button" class="wr-reveal-btn" aria-expanded="false" style="background:#1a4b8c; color:#fff; border:none; border-radius:.4rem; padding:.55rem 1.3rem; font-size:.9rem; font-weight:600; cursor:pointer; margin-bottom:.75rem;">Show suggested answers</button>\n\n'+
-        '  <div class="wr-suggested" style="display:none; background:#fff; border:1px solid #dee2e6; border-top:4px solid #1a4b8c; border-radius:.5rem; padding:1rem 1.25rem; margin-top:.5rem;">\n'+
-        '    <p style="color:#1a4b8c; font-weight:700; font-size:.82rem; text-transform:uppercase; letter-spacing:.06em; margin:0 0 .75rem 0;">Suggested answers</p>\n'+
-        '    <dl style="margin:0;">\n'+dl+'\n    </dl>\n  </div>\n\n'+
-        '</div>\n\n</div></div><!-- End of activity -->\n\n'+WR_SCRIPT+'\n';
-    }
-  },
-
-  /* ---- Decision flowchart (yes/no) ---- */
-  flowchart: {
-    label: 'Decision flowchart',
+  /* ---- 3. Video activity (BKI established markup, transcript accordion inside the well card) ---- */
+  video: {
+    label: 'Video activity',
     state: {},
     renderFields: function(form){
       add(form,
-        '<label class="fld" for="flow_heading">Activity heading</label>'+
-        '<input type="text" id="flow_heading" value="When to escalate">'+
-        '<label class="fld" for="flow_title">Top title box</label>'+
-        '<input type="text" id="flow_title" value="Should I escalate this technical issue?">'+
-        '<label class="fld" for="flow_open">Opening statement</label>'+
-        '<input type="text" id="flow_open" value="A user reports a technical problem.">'+
-        '<label class="fld" for="flow_decision">Decision question (diamond)</label>'+
-        '<input type="text" id="flow_decision" value="Can you resolve it by following troubleshooting steps and your workplace guidelines?">'+
-        '<label class="fld" for="flow_yes">Yes path lines <span class="hint">one per line</span></label>'+
-        '<textarea id="flow_yes">Resolve the issue.\nDocument the outcome.\nContinue your work.</textarea>'+
-        '<label class="fld" for="flow_yespill">Yes path pill label</label>'+
-        '<input type="text" id="flow_yespill" value="Document the outcome">'+
-        '<label class="fld" for="flow_no">No path list items <span class="hint">one per line</span></label>'+
-        '<textarea id="flow_no">Stop working on the issue.\nNotify the user you are getting additional help.\nEscalate the technical problem.</textarea>'+
-        '<label class="fld" for="flow_nopill">No path pill label</label>'+
-        '<input type="text" id="flow_nopill" value="Document the outcome">');
+        '<label class="fld" for="vd_title">Video title</label>'+
+        '<input type="text" id="vd_title" value="[Video title]">'+
+        '<label class="fld" for="vd_dur">Playtime (mm:ss)</label>'+
+        '<input type="text" id="vd_dur" value="mm:ss">'+
+        '<label class="fld" for="vd_src">YouTube embed URL or video ID</label>'+
+        '<input type="text" id="vd_src" value="https://www.youtube.com/embed/VIDEO-ID-HERE">'+
+        '<p class="hint">Paste the full embed URL, or just the video ID and the embed URL is built for you.</p>'+
+        '<label class="fld" for="vd_tx">Transcript</label>'+
+        '<textarea id="vd_tx" style="min-height:9rem;">[Transcript text]</textarea>'+
+        '<p class="hint">Blank line = new paragraph. The transcript goes in an accordion inside the video box.</p>'+
+        '<label class="fld" for="vd_id">Unique id suffix</label>'+
+        '<input type="text" id="vd_id" value="video1">'+
+        '<p class="hint">If the page has more than one video box, use video2, video3 and so on.</p>');
     },
-    rawTexts: function(){ return [val('flow_heading'),val('flow_title'),val('flow_open'),val('flow_decision'),val('flow_yes'),val('flow_yespill'),val('flow_no'),val('flow_nopill')]; },
+    rawTexts: function(){ return [val('vd_title'),val('vd_dur'),val('vd_src'),val('vd_tx')]; },
     build: function(){
-      var yesLines=scrub(val('flow_yes')).split(/\n/).filter(function(x){return x.trim();}).map(function(x){return esc(x.trim());}).join('<br>');
-      var noItems=scrub(val('flow_no')).split(/\n/).filter(function(x){return x.trim();}).map(function(x){return '        <li>'+esc(x.trim())+'</li>';}).join('\n');
+      var src = scrub(val('vd_src'));
+      if(src && src.indexOf('/') === -1 && src.indexOf('.') === -1){ src = 'https://www.youtube.com/embed/' + src; }
+      var id = idSafe(val('vd_id'),'video1');
       return GEN_HEADER+
-        '<div class="well card padd10px"><h4 class="reflect-heading text-success"><i aria-hidden="true" class="fa fa-lightbulb-o"></i>&nbsp;'+esc(scrub(val('flow_heading')))+'</h4><div class="reflect-content">\n\n'+
-        '<div class="fc-tree" style="font-family:inherit; font-size:.93rem; text-align:center;">\n\n'+
-        '  <div style="background:#c9d4e8; border:2px solid #8a9bbf; border-radius:.5rem; padding:.75rem 1.25rem; display:inline-block; margin-bottom:.5rem;"><strong>'+esc(scrub(val('flow_title')))+'</strong></div>\n\n'+
-        '  <div style="font-size:1.4rem; line-height:1; margin-bottom:.5rem;">&#8595;</div>\n\n'+
-        '  <div style="background:#d4edda; border:2px solid #7fbf8e; border-radius:.5rem; padding:.75rem 1.25rem; display:inline-block; margin-bottom:.5rem;">'+esc(scrub(val('flow_open')))+'</div>\n\n'+
-        '  <div style="font-size:1.4rem; line-height:1; margin-bottom:.5rem;">&#8595;</div>\n\n'+
-        '  <div style="display:inline-block; background:#dde3ef; border:2px solid #8a9bbf; transform:rotate(45deg); width:160px; height:160px; margin-bottom:.5rem; position:relative;">\n'+
-        '    <div style="transform:rotate(-45deg); position:absolute; top:50%; left:50%; translate:-50% -50%; width:180px; font-size:.82rem; line-height:1.4;">'+esc(scrub(val('flow_decision')))+'</div>\n  </div>\n\n'+
-        '  <div class="fc-buttons" style="display:flex; justify-content:center; gap:1rem; margin-top:.5rem; margin-bottom:1rem;">\n'+
-        '    <button class="fc-btn-yes" style="background:#2e7d32; color:#fff; border:none; border-radius:.35rem; padding:.55rem 1.5rem; font-size:.93rem; font-weight:700; cursor:pointer;">Yes</button>\n'+
-        '    <button class="fc-btn-no" style="background:#c0392b; color:#fff; border:none; border-radius:.35rem; padding:.55rem 1.5rem; font-size:.93rem; font-weight:700; cursor:pointer;">No</button>\n  </div>\n\n'+
-        '  <div class="fc-yes-path" style="display:none;">\n'+
-        '    <div style="font-size:1.4rem; line-height:1; margin-bottom:.5rem;">&#8595;</div>\n'+
-        '    <div style="background:#d4edda; border:2px solid #7fbf8e; border-radius:.5rem; padding:.75rem 1rem; text-align:left; margin-bottom:.5rem;">\n'+
-        '      <div style="display:flex; align-items:flex-start; gap:.5rem;"><span style="background:#2e7d32; color:#fff; border-radius:50%; width:1.4rem; height:1.4rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:.8rem;">&#10003;</span>\n'+
-        '        <div>'+yesLines+'</div>\n      </div>\n    </div>\n'+
-        '    <div style="font-size:1.4rem; line-height:1; margin-bottom:.5rem;">&#8595;</div>\n'+
-        '    <div style="background:#fff3cd; border:2px solid #e6a817; border-radius:2rem; padding:.65rem 1.5rem; display:inline-block; margin-bottom:1rem;"><strong>'+esc(scrub(val('flow_yespill')))+'</strong></div>\n    <br>\n'+
-        '    <button class="fc-btn-reset" style="background:#6c757d; color:#fff; border:none; border-radius:.35rem; padding:.4rem 1rem; font-size:.82rem; font-weight:600; cursor:pointer;">Start again</button>\n  </div>\n\n'+
-        '  <div class="fc-no-path" style="display:none;">\n'+
-        '    <div style="font-size:1.4rem; line-height:1; margin-bottom:.5rem;">&#8595;</div>\n'+
-        '    <div style="background:#fff3cd; border:2px solid #e6a817; border-radius:.5rem; padding:.75rem 1rem; text-align:left; margin-bottom:.5rem;">\n'+
-        '      <ul style="margin:0 0 .75rem 1rem; padding:0;">\n'+noItems+'\n      </ul>\n'+
-        '      <div style="text-align:center;"><span style="background:#fff; border:2px solid #e6a817; border-radius:2rem; padding:.3rem .9rem; font-size:.82rem; display:inline-block;">'+esc(scrub(val('flow_nopill')))+'</span></div>\n    </div>\n'+
-        '    <div style="font-size:1.4rem; line-height:1; margin-bottom:.5rem;">&#8595;</div>\n'+
-        '    <div style="background:#fff3cd; border:2px solid #e6a817; border-radius:2rem; padding:.65rem 1.5rem; display:inline-block; margin-bottom:1rem;"><strong>'+esc(scrub(val('flow_nopill')))+'</strong></div>\n    <br>\n'+
-        '    <button class="fc-btn-reset" style="background:#6c757d; color:#fff; border:none; border-radius:.35rem; padding:.4rem 1rem; font-size:.82rem; font-weight:600; cursor:pointer;">Start again</button>\n  </div>\n\n'+
-        '</div>\n\n</div></div><!-- End of activity -->\n\n'+FLOW_SCRIPT+'\n';
+        '<!--Video activity template-->\n'+
+        '<div class="well card padd10px">\n'+
+        '<h4 class="text-danger vidTitle"><i class="fa fa-play-circle-o" aria-hidden="true"></i>&nbsp;'+esc(scrub(val('vd_title')))+' - ('+esc(scrub(val('vd_dur')))+')</h4>\n'+
+        '<p class="vidInstruction"><strong>Select</strong> the play icon to watch the video.</p>\n'+
+        '<p class="vidEmbedCode"><iframe width="560" height="315" src="'+attr(src)+'" frameborder="0" allowfullscreen=""></iframe></p>\n'+
+        '<div id="accordion-'+id+'" class="accordion">\n'+
+        '<div class="card">\n'+
+        '<div class="card-header" id="card-'+id+'-1">\n'+
+        '<h3 class="mb-0"><button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse-'+id+'-1" aria-expanded="true" aria-controls="collapse-'+id+'-1"><strong>Transcript</strong></button></h3>\n'+
+        '</div>\n'+
+        '<div id="collapse-'+id+'-1" class="collapse" aria-labelledby="card-'+id+'-1" data-parent="#accordion-'+id+'">\n'+
+        '<div class="card-body">\n'+
+        pTags(val('vd_tx'))+'\n'+
+        '</div>\n'+
+        '</div>\n'+
+        '</div>\n'+
+        '</div>\n'+
+        '</div>\n'+
+        '<!-- End of video activity -->\n'+
+        '<br><br>\n';
     }
   },
 
-  /* ---- Drag and drop into buckets ---- */
-  dragdrop: {
-    label: 'Drag and drop',
-    state: {
-      buckets: [ {label:'Group 1'}, {label:'Group 2'} ],
-      items: [ {text:'',bucket:0}, {text:'',bucket:1}, {text:'',bucket:0}, {text:'',bucket:1} ]
-    },
+  /* ---- 4. Accordion (Greg Bird markup) ---- */
+  accordion: {
+    label: 'Accordion',
+    state: { items: [ {heading:'',content:''}, {heading:'',content:''}, {heading:'',content:''} ] },
     renderFields: function(form){
       var self=this;
       add(form,
-        '<label class="fld" for="dd_heading">Activity heading</label>'+
-        '<input type="text" id="dd_heading" value="Sort into groups (drag and drop)">'+
-        '<label class="fld" for="dd_intro">Intro line</label>'+
-        '<input type="text" id="dd_intro" value="Drag each item into the correct group.">'+
-        '<label class="fld">Buckets <span class="hint">2 or 3</span></label>'+
-        '<div id="dd_buckets"></div>'+
-        '<div class="row-actions"><button type="button" class="btn ghost sm" id="dd_baddb">Add bucket</button></div>'+
+        '<label class="fld" for="ac_num">Accordion number</label>'+
+        '<input type="text" id="ac_num" value="1">'+
+        '<p class="hint">Unique per page: the first accordion is 1, the next is 2, and so on.</p>'+
+        '<label class="fld" for="ac_intro">Intro line (leave blank to omit)</label>'+
+        '<input type="text" id="ac_intro" value="Select each heading to find out more.">'+
         '<label class="fld">Items</label>'+
-        '<div id="dd_items"></div>'+
-        '<div class="row-actions"><button type="button" class="btn ghost sm" id="dd_iadd">Add item</button></div>'+
-        '<label class="fld" for="dd_msg">All-correct explanation</label>'+
-        '<textarea id="dd_msg">Add a short explanation that shows when every item is correct.</textarea>');
-      var bbox=document.getElementById('dd_buckets'), ibox=document.getElementById('dd_items');
-      function drawBuckets(){
-        bbox.innerHTML='';
-        self.state.buckets.forEach(function(b,i){
-          var row=document.createElement('div'); row.className='opt-row';
-          row.innerHTML='<div class="top"><input type="text" class="dd_blabel" data-i="'+i+'" placeholder="Bucket label">'+
-            '<button type="button" class="btn danger sm dd_bdel" data-i="'+i+'">Remove</button></div>';
-          bbox.appendChild(row); row.querySelector('.dd_blabel').value=b.label;
-        });
-        bbox.querySelectorAll('.dd_blabel').forEach(function(el){ el.addEventListener('input',function(){ self.state.buckets[+el.dataset.i].label=el.value; drawItems(); }); });
-        bbox.querySelectorAll('.dd_bdel').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.buckets.length>2){ var idx=+el.dataset.i; self.state.buckets.splice(idx,1); self.state.items.forEach(function(it){ if(it.bucket>=self.state.buckets.length) it.bucket=0; }); drawBuckets(); drawItems(); } }); });
-      }
-      function drawItems(){
-        ibox.innerHTML='';
-        self.state.items.forEach(function(it,i){
-          var opts=self.state.buckets.map(function(b,bi){ return '<option value="'+bi+'"'+(it.bucket===bi?' selected':'')+'>'+(b.label||('Bucket '+(bi+1)))+'</option>'; }).join('');
-          var row=document.createElement('div'); row.className='opt-row';
-          row.innerHTML='<div class="top"><input type="text" class="dd_itext" data-i="'+i+'" placeholder="Item text">'+
-            '<select class="dd_ibucket" data-i="'+i+'">'+opts+'</select>'+
-            '<button type="button" class="btn danger sm dd_idel" data-i="'+i+'">Remove</button></div>';
-          ibox.appendChild(row); row.querySelector('.dd_itext').value=it.text;
-        });
-        ibox.querySelectorAll('.dd_itext').forEach(function(el){ el.addEventListener('input',function(){ self.state.items[+el.dataset.i].text=el.value; }); });
-        ibox.querySelectorAll('.dd_ibucket').forEach(function(el){ el.addEventListener('change',function(){ self.state.items[+el.dataset.i].bucket=+el.value; }); });
-        ibox.querySelectorAll('.dd_idel').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.items.length>2){ self.state.items.splice(+el.dataset.i,1); drawItems(); } }); });
-      }
-      drawBuckets(); drawItems();
-      document.getElementById('dd_baddb').addEventListener('click', function(){ if(self.state.buckets.length<3){ self.state.buckets.push({label:'Group '+(self.state.buckets.length+1)}); drawBuckets(); drawItems(); } });
-      document.getElementById('dd_iadd').addEventListener('click', function(){ self.state.items.push({text:'',bucket:0}); drawItems(); });
-    },
-    rawTexts: function(){ var t=[val('dd_heading'),val('dd_intro'),val('dd_msg')]; this.state.buckets.forEach(function(b){ t.push(b.label); }); this.state.items.forEach(function(it){ t.push(it.text); }); return t; },
-    build: function(){
-      var buckets=this.state.buckets; var keys=buckets.map(function(_,i){return 'b'+i;});
-      var poolItems=this.state.items.map(function(it){
-        var key=keys[it.bucket]||keys[0];
-        return '    <button type="button" class="dd-item" draggable="true" data-correct="'+key+'" style="background:#fff; border:2px solid #1a4b8c; color:#0e2b3c; border-radius:.4rem; padding:.55rem .85rem; font-size:.88rem; font-family:inherit; cursor:grab; max-width:100%; text-align:left; line-height:1.4;">'+esc(scrub(it.text))+'</button>';
-      }).join('\n\n');
-      var bucketDivs=buckets.map(function(b,i){
-        return '    <div class="dd-bucket" data-category="'+keys[i]+'" tabindex="0" role="region" aria-label="'+attr(scrub(b.label))+' bucket" style="background:#f8fafc; border:2px solid #cbd5e1; border-radius:.5rem; padding:1rem; min-height:150px;">\n'+
-          '      <h4 style="font-size:.85rem; font-weight:700; color:#1a4b8c; margin:0 0 .6rem 0; text-align:center;">'+esc(scrub(b.label))+'</h4>\n    </div>';
-      }).join('\n');
-      return GEN_HEADER+
-        '<div class="well card padd10px"><h4 class="reflect-heading text-success"><i aria-hidden="true" class="fa fa-lightbulb-o"></i>&nbsp;'+esc(scrub(val('dd_heading')))+'</h4><div class="reflect-content">\n'+
-        '<p>'+esc(scrub(val('dd_intro')))+'</p>\n\n'+
-        '<div class="dd-block" data-correct-msg="'+attr(scrub(val('dd_msg')))+'">\n\n'+
-        '  <div style="background:#f1f5f9; border-left:4px solid #1a4b8c; padding:.7rem .9rem; border-radius:.4rem; font-size:.85rem; color:#334155; margin-bottom:1rem;"><strong>Keyboard:</strong> Tab to focus an item, press Space to pick it up, Tab to a bucket, press Space to drop. Press Escape to cancel.</div>\n\n'+
-        '  <div style="font-size:.75rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.5rem;">Items to sort</div>\n'+
-        '  <div class="dd-pool" data-role="pool" aria-label="Items to sort" style="display:flex; flex-wrap:wrap; gap:.5rem; padding:1rem; background:#f8fafc; border:2px dashed #cbd5e1; border-radius:.5rem; margin-bottom:1rem; min-height:70px;">\n\n'+poolItems+'\n\n  </div>\n\n'+
-        '  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1rem;">\n'+bucketDivs+'\n  </div>\n\n'+
-        '  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.5rem;">\n    <button type="button" class="dd-check" style="background:#1a4b8c; color:#fff; border:none; border-radius:.4rem; padding:.55rem 1.25rem; font-size:.9rem; font-weight:600; cursor:pointer; font-family:inherit;">Check answers</button>\n    <button type="button" class="dd-reset" style="background:#fff; color:#1a4b8c; border:2px solid #1a4b8c; border-radius:.4rem; padding:.55rem 1.25rem; font-size:.9rem; font-weight:600; cursor:pointer; font-family:inherit;">Reset</button>\n  </div>\n\n'+
-        '  <div class="dd-feedback" style="display:none; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem;"></div>\n\n'+
-        '  <div class="dd-live" aria-live="polite" aria-atomic="true" style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;"></div>\n\n'+
-        '</div>\n\n</div></div><!-- End of activity -->\n\n'+DD_SCRIPT+'\n';
-    }
-  },
-
-  /* ---- Tap to sort (two categories) ---- */
-  tapsort: {
-    label: 'Tap to sort',
-    state: { items: [ {text:'',correct:'c1'}, {text:'',correct:'c2'}, {text:'',correct:'c1'}, {text:'',correct:'c2'} ] },
-    renderFields: function(form){
-      var self=this;
-      add(form,
-        '<label class="fld" for="ts_heading">Activity heading</label>'+
-        '<input type="text" id="ts_heading" value="Sort into categories">'+
-        '<label class="fld" for="ts_intro">Intro line</label>'+
-        '<input type="text" id="ts_intro" value="For each item, select the button to place it in the correct category.">'+
-        '<label class="fld">Category 1</label>'+
-        '<div class="opt-row"><div class="top"><input type="text" id="ts_c1_btn" value="Group 1" placeholder="Button label"><input type="text" id="ts_c1_bucket" value="Group 1" placeholder="Bucket heading"></div></div>'+
-        '<label class="fld">Category 2</label>'+
-        '<div class="opt-row"><div class="top"><input type="text" id="ts_c2_btn" value="Group 2" placeholder="Button label"><input type="text" id="ts_c2_bucket" value="Group 2" placeholder="Bucket heading"></div></div>'+
-        '<label class="fld">Items</label>'+
-        '<div id="ts_items"></div>'+
-        '<div class="row-actions"><button type="button" class="btn ghost sm" id="ts_add">Add item</button></div>'+
-        '<label class="fld" for="ts_msg">All-correct explanation</label>'+
-        '<textarea id="ts_msg">Add a short explanation that shows when every item is correct.</textarea>');
-      var box=document.getElementById('ts_items');
+        '<div id="ac_items"></div>'+
+        '<div class="row-actions"><button type="button" class="btn ghost sm" id="ac_add">Add item</button></div>');
+      var box=document.getElementById('ac_items');
       function draw(){
         box.innerHTML='';
         self.state.items.forEach(function(it,i){
           var row=document.createElement('div'); row.className='opt-row';
-          row.innerHTML='<div class="top"><input type="text" class="ts_itext" data-i="'+i+'" placeholder="Item text">'+
-            '<select class="ts_icorr" data-i="'+i+'"><option value="c1"'+(it.correct==='c1'?' selected':'')+'>Category 1</option><option value="c2"'+(it.correct==='c2'?' selected':'')+'>Category 2</option></select>'+
-            '<button type="button" class="btn danger sm ts_idel" data-i="'+i+'">Remove</button></div>';
-          box.appendChild(row); row.querySelector('.ts_itext').value=it.text;
+          row.innerHTML='<div class="top"><input type="text" class="ac_head" data-i="'+i+'" placeholder="Item '+(i+1)+' heading">'+
+            '<button type="button" class="btn danger sm ac_del" data-i="'+i+'">Remove</button></div>'+
+            '<textarea class="ac_body" data-i="'+i+'" placeholder="Item '+(i+1)+' content. Blank line = new paragraph." style="margin-top:.5rem;"></textarea>';
+          box.appendChild(row);
+          row.querySelector('.ac_head').value=it.heading;
+          row.querySelector('.ac_body').value=it.content;
         });
-        box.querySelectorAll('.ts_itext').forEach(function(el){ el.addEventListener('input',function(){ self.state.items[+el.dataset.i].text=el.value; }); });
-        box.querySelectorAll('.ts_icorr').forEach(function(el){ el.addEventListener('change',function(){ self.state.items[+el.dataset.i].correct=el.value; }); });
-        box.querySelectorAll('.ts_idel').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.items.length>2){ self.state.items.splice(+el.dataset.i,1); draw(); } }); });
+        box.querySelectorAll('.ac_head').forEach(function(el){ el.addEventListener('input',function(){ self.state.items[+el.dataset.i].heading=el.value; }); });
+        box.querySelectorAll('.ac_body').forEach(function(el){ el.addEventListener('input',function(){ self.state.items[+el.dataset.i].content=el.value; }); });
+        box.querySelectorAll('.ac_del').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.items.length>2){ self.state.items.splice(+el.dataset.i,1); draw(); } }); });
       }
       draw();
-      document.getElementById('ts_add').addEventListener('click', function(){ self.state.items.push({text:'',correct:'c1'}); draw(); });
+      document.getElementById('ac_add').addEventListener('click', function(){ if(self.state.items.length<8){ self.state.items.push({heading:'',content:''}); draw(); } });
     },
-    rawTexts: function(){ var t=[val('ts_heading'),val('ts_intro'),val('ts_msg'),val('ts_c1_btn'),val('ts_c1_bucket'),val('ts_c2_btn'),val('ts_c2_bucket')]; this.state.items.forEach(function(it){ t.push(it.text); }); return t; },
+    rawTexts: function(){ var t=[val('ac_intro')]; this.state.items.forEach(function(it){ t.push(it.heading); t.push(it.content); }); return t; },
     build: function(){
-      var c1b=scrub(val('ts_c1_btn')), c2b=scrub(val('ts_c2_btn')), c1l=scrub(val('ts_c1_bucket')), c2l=scrub(val('ts_c2_bucket'));
-      function assignBtns(){
-        return '<button type="button" class="ts-assign" data-target="c1" aria-label="Sort as '+attr(c1b)+'" style="background:#fff; border:1px solid #1a4b8c; color:#1a4b8c; padding:.35rem .8rem; font-size:.82rem; font-weight:600; border-radius:.35rem; cursor:pointer; font-family:inherit;">'+esc(c1b)+'</button>'+
-               '<button type="button" class="ts-assign" data-target="c2" aria-label="Sort as '+attr(c2b)+'" style="background:#fff; border:1px solid #1a4b8c; color:#1a4b8c; padding:.35rem .8rem; font-size:.82rem; font-weight:600; border-radius:.35rem; cursor:pointer; font-family:inherit;">'+esc(c2b)+'</button>';
-      }
-      var items=this.state.items.map(function(it){
-        return '    <div class="ts-item" data-correct="'+(it.correct==='c2'?'c2':'c1')+'" style="display:flex; align-items:center; gap:.75rem; background:#fff; border:1px solid #e2e8f0; border-radius:.4rem; padding:.6rem .85rem; margin-bottom:.5rem; font-size:.88rem; line-height:1.4;">\n'+
-          '      <span class="ts-item-text" style="flex:1; color:#0e2b3c;">'+esc(scrub(it.text))+'</span>\n'+
-          '      <span class="ts-actions" style="display:flex; gap:.4rem; flex-shrink:0;">'+assignBtns()+'</span>\n    </div>';
-      }).join('\n\n');
-      function bucket(key,label){
-        return '    <div class="ts-bucket" data-category="'+key+'" style="background:#f8fafc; border:2px solid #cbd5e1; border-radius:.5rem; padding:.85rem; min-height:100px;">\n'+
-          '      <h4 style="font-size:.85rem; font-weight:700; color:#1a4b8c; margin:0 0 .6rem 0; text-align:center;">'+esc(label)+'</h4>\n'+
-          '      <div class="ts-bucket-items">\n        <div class="ts-bucket-empty" style="color:#94a3b8; font-size:.8rem; font-style:italic; text-align:center; padding:1rem 0;">Nothing placed here yet</div>\n      </div>\n    </div>';
-      }
+      var N = idSafe(val('ac_num'),'1');
+      var intro = scrub(val('ac_intro'));
+      var out = GEN_HEADER;
+      if(intro) out += '<p>'+esc(intro)+'</p>\n';
+      out += '<!-- Start of Accordion, ID = "accordion-'+N+'" -->\n'+
+        '<div class="accordion clearfix w-100" id="accordion-'+N+'">\n\n';
+      out += this.state.items.map(function(it,i){
+        var n=i+1;
+        return '    <!-- Start of Item '+n+' -->\n'+
+          '    <div class="card clearfix">\n'+
+          '        <div class="card-header" id="heading-'+n+'-'+N+'">\n'+
+          '            <h4 class="mb-0"> <button class="btn btn-link" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#collapse-'+n+'-'+N+'" data-bs-target="#collapse-'+n+'-'+N+'" aria-expanded="false" aria-controls="collapse-'+n+'-'+N+'"> '+esc(scrub(it.heading))+' </button> </h4>\n'+
+          '        </div>\n'+
+          '        <div id="collapse-'+n+'-'+N+'" class="collapse" aria-labelledby="heading-'+n+'-'+N+'" data-parent="#accordion-'+N+'" data-bs-parent="#accordion-'+N+'">\n'+
+          '            <div class="card-body">\n'+
+          pTags(it.content,'                ')+'\n'+
+          '            </div>\n'+
+          '        </div>\n'+
+          '    </div>\n'+
+          '    <!-- End of Item '+n+' -->\n';
+      }).join('\n');
+      out += '\n</div>\n<!-- End of Accordion, ID = '+N+' -->\n<br><br>\n';
+      return out;
+    }
+  },
+
+  /* ---- 5. Vertical tabs (Greg Bird markup) ---- */
+  vtabs: {
+    label: 'Vertical tabs',
+    state: { tabs: [ {label:'',content:''}, {label:'',content:''}, {label:'',content:''} ] },
+    renderFields: function(form){ tabFields(form, this, 'vt', 'vtabs'); },
+    rawTexts: function(){ var t=[]; this.state.tabs.forEach(function(tb){ t.push(tb.label); t.push(tb.content); }); return t; },
+    build: function(){
+      var self=this;
+      var p = idSafe(val('vt_id'),'vtabs');
+      var nav = self.state.tabs.map(function(tb,i){
+        var n=i+1, on=(i===0);
+        return '<a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" data-bs-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a>';
+      }).join('');
+      var panes = self.state.tabs.map(function(tb,i){
+        var n=i+1, on=(i===0);
+        return '                <!-- Start of Tab '+n+' -->\n'+
+          '                <div class="tab-pane card clearfix p-3 fade'+(on?' active show':'')+'" id="'+p+'-'+n+'" role="tabpanel" aria-labelledby="'+p+'-'+n+'">\n'+
+          '                    <h4>'+esc(scrub(tb.label))+'</h4>\n'+
+          pTags(tb.content,'                    ')+'\n'+
+          '                </div>\n'+
+          '                <!-- End of Tab '+n+' -->\n';
+      }).join('\n');
       return GEN_HEADER+
-        '<div class="well card padd10px"><h4 class="reflect-heading text-success"><i aria-hidden="true" class="fa fa-lightbulb-o"></i>&nbsp;'+esc(scrub(val('ts_heading')))+'</h4><div class="reflect-content">\n'+
-        '<p>'+esc(scrub(val('ts_intro')))+'</p>\n\n'+
-        '<div class="ts-block" data-c1-key="c1" data-c1-label="'+attr(c1b)+'" data-c2-key="c2" data-c2-label="'+attr(c2b)+'" data-correct-msg="'+attr(scrub(val('ts_msg')))+'">\n\n'+
-        '  <div style="font-size:.75rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.5rem;">Items to sort</div>\n'+
-        '  <div class="ts-pool" style="border:2px dashed #cbd5e1; background:#f8fafc; border-radius:.5rem; padding:.85rem; margin-bottom:1.25rem; min-height:60px;">\n\n'+items+'\n\n  </div>\n\n'+
-        '  <div class="ts-buckets" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">\n\n'+bucket('c1',c1l)+'\n\n'+bucket('c2',c2l)+'\n\n  </div>\n\n'+
-        '  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.5rem;">\n    <button type="button" class="ts-check" style="background:#1a4b8c; color:#fff; border:none; border-radius:.4rem; padding:.55rem 1.25rem; font-size:.9rem; font-weight:600; cursor:pointer; font-family:inherit;">Check answers</button>\n    <button type="button" class="ts-reset" style="background:#fff; color:#1a4b8c; border:2px solid #1a4b8c; border-radius:.4rem; padding:.55rem 1.25rem; font-size:.9rem; font-weight:600; cursor:pointer; font-family:inherit;">Reset</button>\n  </div>\n\n'+
-        '  <div class="ts-feedback" style="display:none; margin-top:1rem; padding:.85rem 1.1rem; border-radius:.4rem; font-size:.9rem;"></div>\n\n'+
-        '</div>\n\n</div></div><!-- End of activity -->\n\n'+TS_SCRIPT+'\n';
+        '<!-- Start of Vertical tabs -->\n'+
+        '<div class="row clearfix w-100">\n'+
+        '    <div class="col-3 no-gutters">\n'+
+        '        <div class="nav flex-column nav-pills" id="'+p+'" role="tablist" aria-orientation="vertical">'+nav+'</div>\n'+
+        '    </div>\n'+
+        '    <div class="col-9 no-gutters">\n'+
+        '        <div class="tab-content" id="'+p+'-tabContent">\n\n'+
+        panes+'\n'+
+        '        </div>\n'+
+        '    </div>\n'+
+        '</div>\n'+
+        '<!-- End of Vertical tabs -->\n'+
+        '<br><br>\n';
+    }
+  },
+
+  /* ---- 6. Horizontal tabs (Greg Bird markup) ---- */
+  htabs: {
+    label: 'Horizontal tabs',
+    state: { tabs: [ {label:'',content:''}, {label:'',content:''}, {label:'',content:''} ] },
+    renderFields: function(form){ tabFields(form, this, 'ht', 'htabs'); },
+    rawTexts: function(){ var t=[]; this.state.tabs.forEach(function(tb){ t.push(tb.label); t.push(tb.content); }); return t; },
+    build: function(){
+      var self=this;
+      var p = idSafe(val('ht_id'),'htabs');
+      var nav = self.state.tabs.map(function(tb,i){
+        var n=i+1, on=(i===0);
+        return '    <li class="nav-item"><a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" data-bs-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a></li>';
+      }).join('\n');
+      var panes = self.state.tabs.map(function(tb,i){
+        var n=i+1, on=(i===0);
+        return '    <!-- Start of Tab '+n+' -->\n'+
+          '    <div class="tab-pane clearfix p-3 fade'+(on?' active show':'')+'" id="'+p+'-'+n+'" role="tabpanel" aria-labelledby="'+p+'-'+n+'">\n'+
+          '        <h4>'+esc(scrub(tb.label))+'</h4>\n'+
+          pTags(tb.content,'        ')+'\n'+
+          '    </div>\n'+
+          '    <!-- End of Tab '+n+' -->\n';
+      }).join('');
+      return GEN_HEADER+
+        '<!-- Start of Horizontal tabs -->\n'+
+        '<ul class="nav nav-pills mb-0 clearfix w-100" id="'+p+'" role="tablist">\n'+
+        nav+'\n'+
+        '</ul>\n'+
+        '<div class="tab-content card" id="'+p+'-tabContent">\n'+
+        panes+
+        '</div>\n'+
+        '<!-- End of Horizontal tabs -->\n'+
+        '<br><br>\n';
+    }
+  },
+
+  /* ---- 7. Click and reveal / show-hide (Greg Bird markup) ---- */
+  reveal: {
+    label: 'Click and reveal',
+    state: {},
+    renderFields: function(form){
+      add(form,
+        '<label class="fld" for="rv_lead">Lead-in text (leave blank to omit)</label>'+
+        '<textarea id="rv_lead">'+LOREM1+'</textarea>'+
+        '<p class="hint">Blank line = new paragraph. Sits above the reveal button.</p>'+
+        '<label class="fld" for="rv_btn">Button label</label>'+
+        '<input type="text" id="rv_btn" value="More">'+
+        '<label class="fld" for="rv_content">Hidden content</label>'+
+        '<textarea id="rv_content">Insert hidden content here.</textarea>'+
+        '<label class="fld" for="rv_id">Unique id</label>'+
+        '<input type="text" id="rv_id" value="HiddenContent1">'+
+        '<p class="hint">If the page has more than one reveal, use HiddenContent2, HiddenContent3 and so on.</p>');
+    },
+    rawTexts: function(){ return [val('rv_lead'),val('rv_btn'),val('rv_content')]; },
+    build: function(){
+      var id = idSafe(val('rv_id'),'HiddenContent1');
+      var lead = pTags(val('rv_lead'));
+      return GEN_HEADER+
+        '<!-- Start of Show/Hide interface -->\n'+
+        (lead ? lead+'\n' : '')+
+        '<p> <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#'+id+'" role="button" aria-expanded="false" aria-controls="'+id+'"> '+esc(scrub(val('rv_btn')))+' </a> </p>\n'+
+        '<div class="collapse" id="'+id+'">\n'+
+        '    <div class="card card-body">\n'+
+        pTags(val('rv_content'),'        ')+'\n'+
+        '        <small><a class="btn-block btn btn-sm btn-light" class="text-center" data-toggle="collapse" data-bs-toggle="collapse" href="#'+id+'" role="button" aria-expanded="false" aria-controls="'+id+'">Hide</a></small>\n'+
+        '    </div>\n'+
+        '</div>\n'+
+        '<!-- End of Show/Hide interface -->\n'+
+        '<br><br>\n';
+    }
+  },
+
+  /* ---- 8. Scenario box (BKI established markup) ---- */
+  scenario: {
+    label: 'Scenario box',
+    state: {},
+    renderFields: function(form){
+      add(form,
+        '<label class="fld" for="sc_narr">Narrative</label>'+
+        '<textarea id="sc_narr" style="min-height:7rem;">[Narrative]</textarea>'+
+        '<p class="hint">Blank line = new paragraph.</p>'+
+        '<label class="fld" for="sc_dlg">Dialogue (leave blank to omit the blockquote)</label>'+
+        '<textarea id="sc_dlg">[Any dialogue]</textarea>');
+    },
+    rawTexts: function(){ return [val('sc_narr'),val('sc_dlg')]; },
+    build: function(){
+      var narr = paras(val('sc_narr')).map(function(p){ return '<p>'+esc(p)+'</p>'; }).join('');
+      var dlgParas = paras(val('sc_dlg'));
+      var dlg = dlgParas.length ? '<blockquote class="blockquote">'+dlgParas.map(function(p){ return '<p class="mb-0">'+esc(p)+'</p>'; }).join('')+'</blockquote>' : '';
+      return GEN_HEADER+
+        '<!-- Scenario box -->\n'+
+        '<div class="well card padd10px"><h4 class="text-info"><i aria-hidden="true" class="fa fa-comments-o"></i>&nbsp;Scenario</h4>'+narr+dlg+'</div>\n'+
+        '<!-- End of scenario box -->\n'+
+        '<br><br>\n';
     }
   }
 };
 
+/* Shared repeatable tab fields for vertical and horizontal tabs. */
+function tabFields(form, self, p, defaultId){
+  add(form,
+    '<label class="fld" for="'+p+'_id">Unique id prefix</label>'+
+    '<input type="text" id="'+p+'_id" value="'+defaultId+'">'+
+    '<p class="hint">If the page has more than one set of tabs, use '+defaultId+'2, '+defaultId+'3 and so on.</p>'+
+    '<label class="fld">Tabs (short labels work best)</label>'+
+    '<div id="'+p+'_tabs"></div>'+
+    '<div class="row-actions"><button type="button" class="btn ghost sm" id="'+p+'_add">Add tab</button></div>');
+  var box=document.getElementById(p+'_tabs');
+  function draw(){
+    box.innerHTML='';
+    self.state.tabs.forEach(function(tb,i){
+      var row=document.createElement('div'); row.className='opt-row';
+      row.innerHTML='<div class="top"><input type="text" class="'+p+'_label" data-i="'+i+'" placeholder="Tab '+(i+1)+' label">'+
+        '<button type="button" class="btn danger sm '+p+'_del" data-i="'+i+'">Remove</button></div>'+
+        '<textarea class="'+p+'_body" data-i="'+i+'" placeholder="Tab '+(i+1)+' content. Blank line = new paragraph." style="margin-top:.5rem;"></textarea>';
+      box.appendChild(row);
+      row.querySelector('.'+p+'_label').value=tb.label;
+      row.querySelector('.'+p+'_body').value=tb.content;
+    });
+    box.querySelectorAll('.'+p+'_label').forEach(function(el){ el.addEventListener('input',function(){ self.state.tabs[+el.dataset.i].label=el.value; }); });
+    box.querySelectorAll('.'+p+'_body').forEach(function(el){ el.addEventListener('input',function(){ self.state.tabs[+el.dataset.i].content=el.value; }); });
+    box.querySelectorAll('.'+p+'_del').forEach(function(el){ el.addEventListener('click',function(){ if(self.state.tabs.length>2){ self.state.tabs.splice(+el.dataset.i,1); draw(); } }); });
+  }
+  draw();
+  document.getElementById(p+'_add').addEventListener('click', function(){ if(self.state.tabs.length<6){ self.state.tabs.push({label:'',content:''}); draw(); } });
+}
+
 /* ================= UI WIRING ================= */
-var current='mcq';
+var current='imgright';
 var tabsEl=document.getElementById('tabs');
 var formEl=document.getElementById('form');
 var outEl=document.getElementById('out');
@@ -989,7 +492,8 @@ function residualCheck(markup){
   return {
     en: (markup.match(/\u2013/g)||[]).length,
     em: (markup.match(/\u2014/g)||[]).length,
-    sq: (markup.match(/[\u2018\u2019\u201C\u201D]/g)||[]).length
+    sq: (markup.match(/[\u2018\u2019\u201C\u201D]/g)||[]).length,
+    js: (markup.match(/<script/gi)||[]).length
   };
 }
 
@@ -1011,25 +515,28 @@ document.getElementById('genBtn').addEventListener('click', function(){
     msgs.push('<div class="report info">Input was already clean. Nothing to fix.</div>');
   }
   var r=residualCheck(markup);
-  if(r.en||r.em||r.sq){
-    msgs.push('<div class="report warn">Check failed: output still contains '+r.en+' en dash, '+r.em+' em dash, '+r.sq+' smart quote. Tell the builder maintainer.</div>');
+  if(r.en||r.em||r.sq||r.js){
+    msgs.push('<div class="report warn">Check failed: output still contains '+r.en+' en dash, '+r.em+' em dash, '+r.sq+' smart quote, '+r.js+' script tag. Tell the builder maintainer.</div>');
   } else {
-    msgs.push('<div class="report ok"><b>Output verified.</b> No en dashes, no em dashes, no smart quotes.</div>');
+    msgs.push('<div class="report ok"><b>Output verified.</b> No en dashes, no em dashes, no smart quotes, no script tags.</div>');
   }
   reportEl.innerHTML=msgs.join('');
 
   var doc='<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'+
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">'+
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">'+
-    '<style>body{font-family:system-ui,Arial,sans-serif; margin:14px;} .well.card{padding:1rem; border:1px solid #e1e6ee; border-radius:.5rem;} .reflect-heading{color:#137a3f;}</style>'+
-    '</head><body>'+markup+'</body></html>';
+    '<style>body{font-family:system-ui,Arial,sans-serif; margin:14px;} .well.card{padding:1rem; border:1px solid #e1e6ee; border-radius:.5rem;} .img-responsive{max-width:100%; height:auto;}</style>'+
+    '</head><body>'+markup+
+    '<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></scr'+'ipt>'+
+    '<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></scr'+'ipt>'+
+    '</body></html>';
   previewEl.srcdoc=doc;
 });
 
 document.getElementById('copyBtn').addEventListener('click', function(){
   if(!outEl.value) return;
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(outEl.value).then(function(){ flash(this, 'Copied'); }.bind(this));
+    navigator.clipboard.writeText(outEl.value);
   } else {
     outEl.removeAttribute('readonly'); outEl.select();
     try{ document.execCommand('copy'); }catch(e){}
@@ -1043,12 +550,12 @@ document.getElementById('dlBtn').addEventListener('click', function(){
   var blob=new Blob([outEl.value], {type:'text/html'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=current+'_activity.html';
+  a.download=current+'_snippet.html';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 });
 
-selectTab('mcq');
+selectTab('imgright');
 </script>
 </body>
 </html>
