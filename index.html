@@ -173,7 +173,7 @@ function imageBuild(p, side){
     '</div>\n'+
     (below ? below+'\n' : '')+
     '<!-- End of text and image layout -->\n'+
-    '<br><br>\n';
+    '';
 }
 
 var ACTIVITIES = {
@@ -241,7 +241,7 @@ var ACTIVITIES = {
         '</div>\n'+
         '</div>\n'+
         '<!-- End of video activity -->\n'+
-        '<br><br>\n';
+        '';
     }
   },
 
@@ -286,11 +286,11 @@ var ACTIVITIES = {
       var out = GEN_HEADER;
       if(intro) out += '<p>'+esc(intro)+'</p>\n';
       out += '<!-- Start of Accordion, ID = "accordion-'+N+'" -->\n'+
-        '<div class="accordion clearfix w-100" id="accordion-'+N+'">\n\n';
+        '<div class="accordion" id="accordion-'+N+'">\n\n';
       out += this.state.items.map(function(it,i){
         var n=i+1;
         return '    <!-- Start of Item '+n+' -->\n'+
-          '    <div class="card clearfix">\n'+
+          '    <div class="card">\n'+
           '        <div class="card-header" id="heading-'+n+'-'+N+'">\n'+
           '            <h4 class="mb-0"> <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-'+n+'-'+N+'" aria-expanded="false" aria-controls="collapse-'+n+'-'+N+'"> '+esc(scrub(it.heading))+' </button> </h4>\n'+
           '        </div>\n'+
@@ -302,7 +302,7 @@ var ACTIVITIES = {
           '    </div>\n'+
           '    <!-- End of Item '+n+' -->\n';
       }).join('\n');
-      out += '\n</div>\n<!-- End of Accordion, ID = '+N+' -->\n<br><br>\n';
+      out += '\n</div>\n<!-- End of Accordion, ID = '+N+' -->\n';
       return out;
     }
   },
@@ -318,12 +318,12 @@ var ACTIVITIES = {
       var p = idSafe(val('vt_id'),'vtabs');
       var nav = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
-        return '<a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a>';
+        return '<a class="nav-link'+(on?' active':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a>';
       }).join('');
       var panes = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
         return '                <!-- Start of Tab '+n+' -->\n'+
-          '                <div class="tab-pane card clearfix p-3 fade'+(on?' active show':'')+'" id="'+p+'-'+n+'" role="tabpanel" aria-labelledby="'+p+'-'+n+'">\n'+
+          '                <div class="tab-pane card p-3 fade'+(on?' active show':'')+'" id="'+p+'-'+n+'" role="tabpanel" aria-labelledby="'+p+'-'+n+'">\n'+
           '                    <h4>'+esc(scrub(tb.label))+'</h4>\n'+
           pTags(tb.content,'                    ')+'\n'+
           '                </div>\n'+
@@ -331,18 +331,18 @@ var ACTIVITIES = {
       }).join('\n');
       return GEN_HEADER+
         '<!-- Start of Vertical tabs -->\n'+
-        '<div class="row clearfix w-100">\n'+
-        '    <div class="col-3 no-gutters">\n'+
+        '<div class="row">\n'+
+        '    <div class="col-3">\n'+
         '        <div class="nav flex-column nav-pills" id="'+p+'" role="tablist" aria-orientation="vertical">'+nav+'</div>\n'+
         '    </div>\n'+
-        '    <div class="col-9 no-gutters">\n'+
+        '    <div class="col-9">\n'+
         '        <div class="tab-content" id="'+p+'-tabContent">\n\n'+
         panes+'\n'+
         '        </div>\n'+
         '    </div>\n'+
         '</div>\n'+
         '<!-- End of Vertical tabs -->\n'+
-        '<br><br>\n';
+        '';
     }
   },
 
@@ -357,12 +357,12 @@ var ACTIVITIES = {
       var p = idSafe(val('ht_id'),'htabs');
       var nav = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
-        return '    <li class="nav-item"><a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a></li>';
+        return '    <li class="nav-item"><a class="nav-link'+(on?' active':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a></li>';
       }).join('\n');
       var panes = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
         return '    <!-- Start of Tab '+n+' -->\n'+
-          '    <div class="tab-pane clearfix p-3 fade'+(on?' active show':'')+'" id="'+p+'-'+n+'" role="tabpanel" aria-labelledby="'+p+'-'+n+'">\n'+
+          '    <div class="tab-pane p-3 fade'+(on?' active show':'')+'" id="'+p+'-'+n+'" role="tabpanel" aria-labelledby="'+p+'-'+n+'">\n'+
           '        <h4>'+esc(scrub(tb.label))+'</h4>\n'+
           pTags(tb.content,'        ')+'\n'+
           '    </div>\n'+
@@ -370,14 +370,14 @@ var ACTIVITIES = {
       }).join('');
       return GEN_HEADER+
         '<!-- Start of Horizontal tabs -->\n'+
-        '<ul class="nav nav-pills mb-0 clearfix w-100" id="'+p+'" role="tablist">\n'+
+        '<ul class="nav nav-pills mb-0" id="'+p+'" role="tablist">\n'+
         nav+'\n'+
         '</ul>\n'+
         '<div class="tab-content card" id="'+p+'-tabContent">\n'+
         panes+
         '</div>\n'+
         '<!-- End of Horizontal tabs -->\n'+
-        '<br><br>\n';
+        '';
     }
   },
 
@@ -413,7 +413,7 @@ var ACTIVITIES = {
         '    </div>\n'+
         '</div>\n'+
         '<!-- End of Show/Hide interface -->\n'+
-        '<br><br>\n';
+        '';
     }
   },
 
@@ -438,7 +438,7 @@ var ACTIVITIES = {
         '<!-- Scenario box -->\n'+
         '<div class="well card padd10px"><h4 class="text-info"><i aria-hidden="true" class="fa fa-comments-o"></i>&nbsp;Scenario</h4>'+narr+dlg+'</div>\n'+
         '<!-- End of scenario box -->\n'+
-        '<br><br>\n';
+        '';
     }
   }
 };
