@@ -219,7 +219,7 @@ var ACTIVITIES = {
         '<div id="accordion-'+id+'" class="accordion">\n'+
         '<div class="card">\n'+
         '<div class="card-header" id="card-'+id+'-1">\n'+
-        '<h3 class="mb-0"><button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse-'+id+'-1" aria-expanded="true" aria-controls="collapse-'+id+'-1"><strong>Transcript</strong></button></h3>\n'+
+        '<h3 class="mb-0"><button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse-'+id+'-1" aria-expanded="false" aria-controls="collapse-'+id+'-1"><strong>Transcript</strong></button></h3>\n'+
         '</div>\n'+
         '<div id="collapse-'+id+'-1" class="collapse" aria-labelledby="card-'+id+'-1" data-parent="#accordion-'+id+'">\n'+
         '<div class="card-body">\n'+
@@ -281,9 +281,9 @@ var ACTIVITIES = {
         return '    <!-- Start of Item '+n+' -->\n'+
           '    <div class="card clearfix">\n'+
           '        <div class="card-header" id="heading-'+n+'-'+N+'">\n'+
-          '            <h4 class="mb-0"> <button class="btn btn-link" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#collapse-'+n+'-'+N+'" data-bs-target="#collapse-'+n+'-'+N+'" aria-expanded="false" aria-controls="collapse-'+n+'-'+N+'"> '+esc(scrub(it.heading))+' </button> </h4>\n'+
+          '            <h4 class="mb-0"> <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-'+n+'-'+N+'" aria-expanded="false" aria-controls="collapse-'+n+'-'+N+'"> '+esc(scrub(it.heading))+' </button> </h4>\n'+
           '        </div>\n'+
-          '        <div id="collapse-'+n+'-'+N+'" class="collapse" aria-labelledby="heading-'+n+'-'+N+'" data-parent="#accordion-'+N+'" data-bs-parent="#accordion-'+N+'">\n'+
+          '        <div id="collapse-'+n+'-'+N+'" class="collapse" aria-labelledby="heading-'+n+'-'+N+'" data-parent="#accordion-'+N+'">\n'+
           '            <div class="card-body">\n'+
           pTags(it.content,'                ')+'\n'+
           '            </div>\n'+
@@ -307,7 +307,7 @@ var ACTIVITIES = {
       var p = idSafe(val('vt_id'),'vtabs');
       var nav = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
-        return '<a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" data-bs-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a>';
+        return '<a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a>';
       }).join('');
       var panes = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
@@ -346,7 +346,7 @@ var ACTIVITIES = {
       var p = idSafe(val('ht_id'),'htabs');
       var nav = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
-        return '    <li class="nav-item"><a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" data-bs-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a></li>';
+        return '    <li class="nav-item"><a class="nav-link'+(on?' active show':'')+'" id="'+p+'-'+n+'-tab" data-toggle="pill" href="#'+p+'-'+n+'" role="tab" aria-controls="'+p+'-'+n+'" aria-selected="'+(on?'true':'false')+'">'+esc(scrub(tb.label))+'</a></li>';
       }).join('\n');
       var panes = self.state.tabs.map(function(tb,i){
         var n=i+1, on=(i===0);
@@ -394,11 +394,11 @@ var ACTIVITIES = {
       return GEN_HEADER+
         '<!-- Start of Show/Hide interface -->\n'+
         (lead ? lead+'\n' : '')+
-        '<p> <a class="btn btn-primary" data-toggle="collapse" data-bs-toggle="collapse" href="#'+id+'" role="button" aria-expanded="false" aria-controls="'+id+'"> '+esc(scrub(val('rv_btn')))+' </a> </p>\n'+
+        '<p> <a class="btn btn-primary" data-toggle="collapse" href="#'+id+'" role="button" aria-expanded="false" aria-controls="'+id+'"> '+esc(scrub(val('rv_btn')))+' </a> </p>\n'+
         '<div class="collapse" id="'+id+'">\n'+
         '    <div class="card card-body">\n'+
         pTags(val('rv_content'),'        ')+'\n'+
-        '        <small><a class="btn-block btn btn-sm btn-light" class="text-center" data-toggle="collapse" data-bs-toggle="collapse" href="#'+id+'" role="button" aria-expanded="false" aria-controls="'+id+'">Hide</a></small>\n'+
+        '        <small><a class="btn-block btn btn-sm btn-light text-center" data-toggle="collapse" href="#'+id+'" role="button" aria-expanded="false" aria-controls="'+id+'">Hide</a></small>\n'+
         '    </div>\n'+
         '</div>\n'+
         '<!-- End of Show/Hide interface -->\n'+
