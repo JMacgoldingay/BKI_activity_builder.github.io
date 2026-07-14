@@ -129,7 +129,7 @@ var LOREM1 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ei
 var LOREM2 = 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 var LOREM3 = 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.';
 
-/* Shared form + build for the two image layouts. */
+/* Shared form + build for the two image layouts (Bootstrap grid, stacks on mobile). */
 function imageFields(form, p){
   add(form,
     '<label class="fld" for="'+p+'_src">Image URL</label>'+
@@ -144,24 +144,35 @@ function imageFields(form, p){
     '<p class="hint">Informative and concise. Leave blank only if the image is decorative.</p>'+
     '<label class="fld" for="'+p+'_attr">Attribution</label>'+
     '<input type="text" id="'+p+'_attr" value="Attribution goes here">'+
-    '<label class="fld" for="'+p+'_body">Body text</label>'+
-    '<textarea id="'+p+'_body" style="min-height:9rem;">'+LOREM1+'\n\n'+LOREM2+'\n\n'+LOREM3+'</textarea>'+
-    '<p class="hint">Blank line = new paragraph. This text sits beside the image and wraps under it.</p>');
+    '<label class="fld" for="'+p+'_body">Text beside the image</label>'+
+    '<textarea id="'+p+'_body" style="min-height:8rem;">'+LOREM1+'\n\n'+LOREM2+'</textarea>'+
+    '<p class="hint">Blank line = new paragraph. Sits in the text column; the columns stack on mobile.</p>'+
+    '<label class="fld" for="'+p+'_below">Text below the image row (optional, full width)</label>'+
+    '<textarea id="'+p+'_below">'+LOREM3+'</textarea>'+
+    '<p class="hint">Blank line = new paragraph. Leave empty to omit.</p>');
 }
 function imageBuild(p, side){
-  var right = side === 'right';
-  var floatStyle = right
-    ? 'float: right; width: 30%; max-width: 320px; min-width: 200px; margin:0 0 10px 20px !important'
-    : 'float: left; width: 30%; max-width: 320px; min-width: 200px; margin:0 20px 10px 0 !important';
+  var img =
+    '        <div class="col-12 col-md-4 col-lg-3">\n'+
+    '            <img src="'+attr(scrub(val(p+'_src')))+'" width="'+attr(scrub(val(p+'_w')))+'" height="'+attr(scrub(val(p+'_h')))+'" alt="'+attr(scrub(val(p+'_alt')))+'" class="img-fluid w-100">\n'+
+    '            <div class="text-muted" style="opacity: 0.5">\n'+
+    '                <small>'+esc(scrub(val(p+'_attr')))+'</small>\n'+
+    '            </div>\n'+
+    '        </div>\n';
+  var text =
+    '        <div class="col-12 col-md-8 col-lg-9">\n'+
+    pTags(val(p+'_body'),'            ')+'\n'+
+    '        </div>\n';
+  var below = pTags(val(p+'_below'));
   return GEN_HEADER+
-    '<!-- Text and image layout - image '+side+' -->\n'+
-    '<div class="float-'+side+'" style="'+floatStyle+'">\n'+
-    '    <img src="'+attr(scrub(val(p+'_src')))+'" width="'+attr(scrub(val(p+'_w')))+'" height="'+attr(scrub(val(p+'_h')))+'" alt="'+attr(scrub(val(p+'_alt')))+'" class="img-responsive w-100">\n'+
-    '    <div class="text-muted" style="opacity: 0.5">\n'+
-    '        <small>'+esc(scrub(val(p+'_attr')))+'</small> </div>\n'+
+    '<!-- Text and image layout - image '+side+' (grid, stacks on mobile) -->\n'+
+    '<div class="container">\n'+
+    '    <div class="row">\n'+
+    (side === 'right' ? text+img : img+text)+
+    '    </div>\n'+
     '</div>\n'+
-    '<!-- End of image -->\n'+
-    pTags(val(p+'_body'))+'\n'+
+    (below ? below+'\n' : '')+
+    '<!-- End of text and image layout -->\n'+
     '<br><br>\n';
 }
 
@@ -172,7 +183,7 @@ var ACTIVITIES = {
     label: 'Text + image (right)',
     state: {},
     renderFields: function(form){ imageFields(form,'ir'); },
-    rawTexts: function(){ return [val('ir_src'),val('ir_alt'),val('ir_attr'),val('ir_body')]; },
+    rawTexts: function(){ return [val('ir_src'),val('ir_alt'),val('ir_attr'),val('ir_body'),val('ir_below')]; },
     build: function(){ return imageBuild('ir','right'); }
   },
 
@@ -181,7 +192,7 @@ var ACTIVITIES = {
     label: 'Text + image (left)',
     state: {},
     renderFields: function(form){ imageFields(form,'il'); },
-    rawTexts: function(){ return [val('il_src'),val('il_alt'),val('il_attr'),val('il_body')]; },
+    rawTexts: function(){ return [val('il_src'),val('il_alt'),val('il_attr'),val('il_body'),val('il_below')]; },
     build: function(){ return imageBuild('il','left'); }
   },
 
